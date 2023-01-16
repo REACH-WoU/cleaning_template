@@ -1,10 +1,10 @@
 IN THIS FOLDER:
 
--> place the up-to-date Kobo tools for each country, with the following names:
-Romania: rom_pp2_tool.xlsx
-Moldova: mda_pp2_tool.xlsx
-Poland:  pol_pp2_tool.xlsx
+- the Kobo tool, in a defined file name
 
--> place the JSON files with polish admin boundaries (and possibly other countries, too)
+- API key for the Microsoft translator in a file named microsoft.api.key_regional.R (for translation)
 
--> place the translation API key...
+- excel files with templates:
+other_requests_template.xlsx
+
+- If needed, any other files that will be used during the cleaning.
