@@ -160,6 +160,13 @@ if(nrow(audits) == 0) {audits.summary <- tibble(uuid = raw.main$uuid, tot.rt = N
 }
 
 
+test <- audi %>% 
+  filter(uuid %in% c("00356cbb-ca60-4404-890b-5e460777fa1b","00802536-a749-49e3-9987-0d6936360b22"))
+
+test <- test %>% 
+  group_by(uuid) %>% 
+  group_modify(.,.f = ~process.uuid(.x))
+
 data.audit <- raw.main %>% 
   mutate(duration_mins = difftime(as.POSIXct(end), as.POSIXct(start), units = 'mins'),
          num_NA_cols = rowSums(is.na(raw.main)),
