@@ -13,80 +13,86 @@ source("src/init.R")
 source("src/load_Data.R")
 
 # small utility functions
-make.short.name <- function(name, no_date = F) return(gsub("__","_", paste0(country_short, "_PP2_", name, ifelse(no_date, "", paste0("_", dctime_short)))))
+make.short.name <- function(name, no_date = F) return(gsub("__","_", paste0("HSM_", name, ifelse(no_date, "", paste0("_", dctime_short)))))
 make.filename.xlsx <- function(dir = ".", name, no_date = F) return(gsub("//","/", paste0(dir, "/", make.short.name(name, no_date), ".xlsx")))
 
 #-------------------------------------------------------------------------------
-
-uuids_to_remove <- c()
-
-# update this to the latest data log for this country or leave as-is
-filename_dataset_previous <- "output/data_log/..."
-
-if(filename_dataset_previous != "output/data_log/..."){
-  main.data.previous <- read_xlsx(filename_dataset_previous, col_types = "text", sheet = 1)
-  loop1.previous <- read_xlsx(filename_dataset_previous, col_types = "text", sheet = 2)
-  loop2.previous <- read_xlsx(filename_dataset_previous, col_types = "text", sheet = 3)
-  uuids_to_remove <- main.data.previous$uuid
-}
-
-deletion.log.previous <- load.requests("output/deletion_log", paste0(country_short, ".*_deletion_log"))
-uuids_to_remove <- c(uuids_to_remove, deletion.log.previous$uuid)
+# 
+# uuids_to_remove <- c()
+# 
+# # update this to the latest data log for this country or leave as-is
+# filename_dataset_previous <- "output/data_log/..."
+# 
+# if(filename_dataset_previous != "output/data_log/..."){
+#   main.data.previous <- read_xlsx(filename_dataset_previous, col_types = "text", sheet = 1)
+#   loop1.previous <- read_xlsx(filename_dataset_previous, col_types = "text", sheet = 2)
+#   loop2.previous <- read_xlsx(filename_dataset_previous, col_types = "text", sheet = 3)
+#   uuids_to_remove <- main.data.previous$uuid
+# }
+# 
+# deletion.log.previous <- load.requests("output/deletion_log", paste0(country_short, ".*_deletion_log"))
+# uuids_to_remove <- c(uuids_to_remove, deletion.log.previous$uuid)
   
-########################################
-##  load & remove previous data        ##
-raw.main <- kobo.raw.main %>%          ##
-  filter(!(uuid %in% uuids_to_remove)) 
-raw.loop1 <- kobo.raw.loop1 %>%        ##
-  filter(!(uuid %in% uuids_to_remove)) 
-# raw.loop2 <- kobo.raw.loop2 %>%        ##
+# ########################################
+# ##  load & remove previous data        ##
+# raw.main <- kobo.raw.main %>%          ##
 #   filter(!(uuid %in% uuids_to_remove)) 
-                                       ##
+# raw.loop1 <- kobo.raw.loop1 %>%        ##
+#   filter(!(uuid %in% uuids_to_remove)) 
+# # raw.loop2 <- kobo.raw.loop2 %>%        ##
+# #   filter(!(uuid %in% uuids_to_remove)) 
+#                                        ##
 ########################################
-
+raw.main <- kobo.raw.main
 # Change in the tool 
-
+cols_remove <- c(
+  "d6_sanitation/none_of_the_above",
+  "g2_vulnerable_IDP/none_of_the_above"
+)
 ## Add any changes to the tool?
-
+raw.main <- raw.main %>%
+  select(-any_of(cols_remove, vars = NULL))
+tool.survey <- tool.survey %>% 
+  mutate(datasheet = "main")
 #-------------------------------------------------------------------------------
 # 0) INITIAL CLEANING: drop and rename columns
 ################################################################################
 
 raw.main <- raw.main %>% 
   rename(submission_time = "_submission_time") %>% 
-  rename_all(~sub("_geolocation","geolocation", .x)) %>% 
-  mutate(resp_activity = ifelse(resp_activity == "unemployed_not employed","unemployed",resp_activity)) ## Cleaning after tool
+  rename_all(~sub("_geolocation","geolocation", .x)) 
 
-if("geolocation" %in% colnames(raw.main)) 
-  raw.main <- raw.main %>% rename(`_geolocation` = "geolocation")  # this is to drop the column with aggregated GPS data (not useful)
 
 cols_to_drop_main <- c(
-  tool.survey %>% filter(type == "note" & datasheet == "main") %>% pull(name),      # all note columns
+  tool.survey %>% filter(type == "note") %>% pull(name),      # all note columns
   colnames(raw.main)[str_starts(colnames(raw.main), "_")]     # all columns with names starting with underscore
 )
 
-raw.main <- raw.main %>% select(-all_of(cols_to_drop_main)) %>% relocate(uuid)
-raw.loop1 <- raw.loop1 %>% select(-starts_with("_")) %>% relocate(uuid)  # all columns with names starting with underscore
+
+
+
+raw.main <- raw.main %>% select(-any_of(cols_to_drop_main, vars=NULL)) %>% relocate(uuid)
+# raw.loop1 <- raw.loop1 %>% select(-starts_with("_")) %>% relocate(uuid)  # all columns with names starting with underscore
 # raw.loop2 <- raw.loop2 %>% select(-starts_with("_")) %>% relocate(uuid)  # all columns with names starting with underscore
 
 # fix dates:
-date_cols_main <- c("today","start","end", tool.survey %>% filter(type == "date" & datasheet == "main") %>% pull(name),
+date_cols_main <- c("date_survey","start","end", tool.survey %>% filter(type == "date" & datasheet == "main") %>% pull(name),
                     "submission_time")
 raw.main <- raw.main %>% 
   mutate_at(date_cols_main, ~ifelse(!str_detect(., '-'), as.character(convertToDateTime(as.numeric(.))), .))
+# 
+# date_cols_loop2 <- c("protection_incidents_when")
+# raw.loop2 <- raw.loop2 %>%
+#   mutate_at(date_cols_loop2, ~ifelse(!str_detect(., '-'), as.character(convertToDateTime(as.numeric(.))), .))
 
-date_cols_loop2 <- c("protection_incidents_when")
-raw.loop2 <- raw.loop2 %>%
-  mutate_at(date_cols_loop2, ~ifelse(!str_detect(., '-'), as.character(convertToDateTime(as.numeric(.))), .))
+rm(cols_to_drop_main, date_cols_main)  
 
-rm(cols_to_drop_main, date_cols_main, date_cols_loop2)  
-
-# for ROM: move staff to enumerator_num
-if(country == "Romania"){
-  raw.main <- raw.main %>% 
-    mutate(enumerator_num = ifelse(isna(enumerator_num), staff, enumerator_num)) %>% 
-    select(-staff)
-}
+# # for ROM: move staff to enumerator_num
+# if(country == "Romania"){
+#   raw.main <- raw.main %>% 
+#     mutate(enumerator_num = ifelse(isna(enumerator_num), staff, enumerator_num)) %>% 
+#     select(-staff)
+# }
 
 #-------------------------------------------------------------------------------
 
@@ -110,7 +116,7 @@ deletion.log.new <- create.deletion.log(raw.main %>% filter(uuid %in% ids),enum_
 rm(ids)
 
 # check for no consent
-no_consents <- raw.main %>% filter(consent_interview == "no")
+no_consents <- raw.main %>% filter(a1_a_consent == "no")
 if (nrow(no_consents) > 0) warning("No-consent detected: ", nrow(no_consents))
 # add to deletion log
 if("no_consent_reasons" %in% colnames(raw.main)){
@@ -127,8 +133,8 @@ deletion.log.new <- rbind(deletion.log.new, deletion.log.no_consents)
 ####################################################
 ## run this to remove duplicates and no-consents  ##
 raw.main  <- raw.main[!(raw.main$uuid %in% deletion.log.new$uuid),]
-raw.loop1 <- raw.loop1[!(raw.loop1$uuid %in% deletion.log.new$uuid),]
-raw.loop2 <- raw.loop2[!(raw.loop2$uuid %in% deletion.log.new$uuid),]
+# raw.loop1 <- raw.loop1[!(raw.loop1$uuid %in% deletion.log.new$uuid),]
+# raw.loop2 <- raw.loop2[!(raw.loop2$uuid %in% deletion.log.new$uuid),]
 ####################################################
 
 rm(no_consents, deletion.log.no_consents)
@@ -137,19 +143,22 @@ rm(no_consents, deletion.log.no_consents)
 #-------------------------------------------------------------------------------
 # 2) AUDIT CHECKS
 ################################################################################
-
 ## Survey durations 
 
 # FOR POL: WE WERE NOT GIVEN ACCESS TO AUDIT FILES, so no audit logs will be found
 
-audits <- load.audit.files(dir.audits, uuids = raw.main$uuid, 
-                           (tool.survey %>% filter(name == "audit") %>% pull(parameter)) == "track-changes=TRUE") 
+audits <- load.audit.files(dir.audits, uuids = raw.main$uuid, track.changes = F) 
 
-if(nrow(audits) > 0){
+# save.image("environment.RData")
+# load("environment.RData")
+
+if(nrow(audits) == 0) {audits.summary <- tibble(uuid = raw.main$uuid, tot.rt = NA)
+}else{
   audits.summary <- audits %>% 
     group_by(uuid) %>% 
-    group_modify(~process.uuid(.x))
-}else{ audits.summary <- tibble(uuid = as.character(NA), tot.rt = as.numeric(NA), .rows = 0) }
+    group_modify(~process.uuid(.x)) #### TO DEBUGGGGGG
+}
+
 
 data.audit <- raw.main %>% 
   mutate(duration_mins = difftime(as.POSIXct(end), as.POSIXct(start), units = 'mins'),
@@ -189,14 +198,19 @@ rm(audits, data.audit)
 # DECISIONs:
 # interviews that were too fast and decided to be removed based on these uuids:
 ids <- c(
-  "884d0201-354f-44e6-88d8-c704deda7f79",
-  "3055bbfb-e42b-4a29-bc90-f0e6f8c2a67f",
-  "23081787-96e3-4f3e-9995-e76bae7b11f9"
+
 )
 deletion.log.too.fast <- create.deletion.log(raw.main %>% filter(uuid %in% ids),
                                              enum_colname, "Survey duration deemed too fast.")
 # soft duplicates to remove:
 ids <- c(
+
+  "2e1705d6-e4c9-473f-a033-8c7fe970ae87",
+  "f1799f61-d0d4-4c4e-8623-42acde6912ac",
+  "12295fb2-497d-42f5-9921-11ce3a047434",
+  "219e43f2-f963-4aa7-b321-3b044caf2c9d",
+  "6c6b57e6-8590-4657-9ae9-d25cc6b386ee",
+  "fc2f01f7-5a3b-49a4-85b0-ff3e38b20667"
   
 )
 deletion.log.softduplicates <- create.deletion.log(raw.main %>% filter(uuid %in% ids),
@@ -204,7 +218,6 @@ deletion.log.softduplicates <- create.deletion.log(raw.main %>% filter(uuid %in%
 # incomplete submissions to remove:
 ids <- c(
   # "f714b2cf-3006-4942-bc1f-11d55a2f44f5"  # POL
-  "16008959-803c-4449-b268-5fd401426091"
 )
 deletion.log.incomplete <- create.deletion.log(raw.main %>% filter(uuid %in% ids), enum_colname, "Incomplete submission")
 
@@ -214,8 +227,8 @@ deletion.log.new <- bind_rows(deletion.log.new, deletion.log.audits)
 #################################################
 ##   removing fast submissions and duplicates  ##
 raw.main  <- raw.main[! (raw.main$uuid  %in% deletion.log.audits$uuid),]
-raw.loop1 <- raw.loop1[!(raw.loop1$uuid %in% deletion.log.audits$uuid),]
-raw.loop2 <- raw.loop2[!(raw.loop2$uuid %in% deletion.log.audits$uuid),]
+# raw.loop1 <- raw.loop1[!(raw.loop1$uuid %in% deletion.log.audits$uuid),]
+# raw.loop2 <- raw.loop2[!(raw.loop2$uuid %in% deletion.log.audits$uuid),]
 #################################################
 
 rm(ids, deletion.log.too.fast, deletion.log.softduplicates)
@@ -415,29 +428,13 @@ write.xlsx(deletion.log.whole, make.filename.xlsx("output/deletion_log/", "delet
 
 other.db <- get.other.db()
 
-#### handle urgent needs separately
-other.db.needs <- other.db %>% filter(name == "urgent_needs_other")
-other.db  <-  other.db   %>%   filter(name != "urgent_needs_other") %>% 
-  filter(!name %in% c("staff_other"))          # also skip those columns
-
 other.db.main  <- other.db[other.db$name %in% colnames(raw.main),]
 # there are no other question in loop1
 other.db.loop2 <- other.db[other.db$name %in% colnames(raw.loop2),]
 
-other.needs.responses <- find.responses(raw.main, other.db.needs) %>% select(-ref.name, -full.label)
-needs_df <- raw.main %>% select(uuid, contains("urgent_needs")) %>% filter(!is.na(urgent_needs_other))
-# find in which column was the 'other' selected using this amazing line of code from https://stackoverflow.com/questions/36960010/get-column-name-that-matches-specific-row-value-in-dataframe
-needs_df$ref.name <- names(needs_df)[apply(needs_df, 1, function(i) which(i == "other"))]
-needs_df <- needs_df %>% left_join(tool.survey %>% select(name, label_colname), by = c("ref.name" = "name")) %>% rename(full.label = !!label_colname)
 
-other.needs.responses <- other.needs.responses %>% 
-  left_join(needs_df %>% select(uuid, ref.name, full.label), by = "uuid")%>% 
-  mutate(loop_index = NA, ref.response = "other")
-####
-other.responses <- rbind(find.other.responses(raw.main, other.db.main),
-                         other.needs.responses
-                         # find.other.responses(raw.loop2, other.db.loop2, is.loop = T))
-                         )
+other.responses <- find.other.responses(raw.main, other.db.main)
+
 
 other.responses.j <- other.responses %>% translate.responses
 
@@ -457,8 +454,8 @@ trans.db <- get.trans.db() %>% filter(!name %in% trans_cols_to_skip)
 
 # there are actually no text questions in main or loop1
 
-trans.db.loop2 <- trans.db[trans.db$name %in% colnames(raw.loop2),]
-trans.responses.loop2 <- find.responses(raw.loop2, trans.db.loop2, is.loop = T)
+# trans.db.loop2 <- trans.db[trans.db$name %in% colnames(raw.loop2),]
+# trans.responses.loop2 <- find.responses(raw.loop2, trans.db.loop2, is.loop = T)
 
 trans.responses <- rbind(trans.responses.loop2)
 trans.responses.j <- trans.responses %>% translate.responses
@@ -468,16 +465,12 @@ save.trans.requests(create.translate.requests(trans.db, trans.responses.j, is.lo
 
 # ------------------------------------------------------------------------------
 # AFTER RECEIVING FILLED-OUT OTHER requests:
+cleaning.log <- data.frame() #### Please remove if you hve loops
 cleaning.log.other <- data.frame()
 or.request <- load.requests(dir.requests,  make.short.name("other_requests", no_date = T), sheet = "Sheet2") 
 or.edited  <- load.requests(dir.responses, make.short.name("other_requests", no_date = T),
                             sheet = "Sheet2", validate = T) # specify Sheet2 because the first one is a readme
 if (nrow(or.request) != nrow(or.edited)) stop("Number of rows differs between or.request and or.edited!")
-  
-#  one-time only (?) : fixing the mess caused by urgent needs:
-or.edited.needs <- or.edited %>% filter(name == "urgent_needs_other") %>% select(-ref.name, -full.label, -ref.response) %>% 
-  left_join(other.needs.responses %>% select(uuid, ref.name, full.label, ref.response))
-or.edited <- or.edited %>% filter(name != "urgent_needs_other") %>% rbind(or.edited.needs)
 
 or.true.and.recode <- filter(or.edited, check == 1)
 if (nrow(or.true.and.recode) > 0){
@@ -584,6 +577,7 @@ raw.loop2 <- raw.loop2 %>% apply.changes(cleaning.log.other_loop2, is.loop = T)
 cleaning.log <- bind_rows(cleaning.log, cleaning.log.other #, cleaning.log.other_loop2
                       ) 
 
+### ADD translation cleaning
 
 #-------------------------------------------------------------------------------
 # 4) LOGIC CHECKS
@@ -793,15 +787,118 @@ cleaning.log <- bind_rows(cleaning.log, cleaning.log.followups)
 
 # ------------------------------------------------------------------------------
 
-# there are no integer-type questions in this survey (other than hh_size and the questions about age)
-# so no need to check for outliers :)
+#############################################################################################################
+# 5) Outliers
+#############################################################################################################
+# save.image(file = "Environment.RData")
+# load("Environment.RData")
 
-## Direct changes after HQ comments
+cleaning.log.outliers <- data.frame()
+# define columns to check for outliers
 
+cols.integer_main <- filter(tool.survey, type == "integer")
+cols.integer_raw.main <- cols.integer_main[cols.integer_main$name %in% colnames(raw.main),] %>% pull(name)
+# cols.integer_raw.loop1 <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop1),] %>% pull(name)
+
+# cols <- filter(tool.survey, str_starts(name, "G_3")) %>% pull(name)
+
+n.sd <- 2
+
+res.outliers_main <- data.frame()
+# res.outliers_loop1 <- data.frame()
+df.all <- data.frame()
+#------------------------------------------------------------------------------------------------------------
+# [MAIN SHEET] -> detect outliers 
+
+raw.main.outliers <- raw.main %>%
+  select("uuid", cols.integer_raw.main) %>%
+  mutate_at(cols.integer_raw.main, as.numeric)
+
+# Outliers per country
+
+for (col in cols.integer_raw.main) {
+  values <- raw.main.outliers %>% 
+    filter(!!sym(col) %_>_% 0) %>% 
+    rename(value=col) %>%  select(uuid, value) %>% 
+    mutate(value.log=log10(value)) %>%  mutate(variable=col) %>% 
+    mutate(is.outlier.lin = (value > mean(value) + n.sd*sd(value)) |
+             (value < mean(value) - n.sd*sd(value)),
+           is.outlier.log = (value.log > mean(value.log) + n.sd*sd(value.log)) |
+             (value.log < mean(value.log) - n.sd*sd(value.log)))
+  values <- filter(values, is.outlier.log) %>%  select(uuid, variable, value)
+  if (nrow(values)>0) print(paste0(col, ": ", nrow(values), " outliers detected"))
+  res.outliers_main <- rbind(res.outliers_main, values)
+}
+
+f.alpha <- function(x) return(ifelse(x, 1, 0))
+
+# Outliers Boxplot generator per country
+
+df <- raw.main.outliers %>% 
+  select(uuid, all_of(cols.integer_raw.main)) %>% 
+  pivot_longer(-uuid, names_to = "variable", values_to = "value") %>% 
+  mutate(value.log = log10(value)) %>% 
+  left_join(select(res.outliers_main, -value) %>% mutate(is.outlier=T), by = c("uuid","variable")) %>% 
+  mutate(is.outlier = ifelse(is.na(is.outlier), F, is.outlier)) %>% 
+  filter(!is.na(value) & value>0)
+df <- gather(df, key = "measure", value = "value", variable)
+df.all <- rbind(df.all, df)
+
+
+write.xlsx(df.all, paste0("output/checking/outliers/main_outlier_prices_analysis_", n.sd, "sd.xlsx"), overwrite=T)
+
+# generating prices boxplots for same locations
+g.outliers_main <- ggplot(df.all) +
+  geom_boxplot(aes(x= measure, y=value.log), width = 0.2) + ylab("Values (log10)") +
+  geom_point(aes(x=measure, y=value.log, group = measure), alpha=f.alpha(df.all$is.outlier), colour="red") +
+  facet_wrap(~value, ncol = 4, scales = "free_y")+
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+
+
+# Save
+ggsave(paste0("output/checking/outliers/main_outlier_prices_analysis_", n.sd, "sd.pdf"), g.outliers_main, 
+       width = 40, height = 80, units = "cm", device="pdf")
+
+
+# Output requests to check
+res.outliers_main <- res.outliers_main %>% 
+  mutate(issue = "Outliers",
+         loop_index = NA,
+         new.value = NA,
+         explanation=NA) %>% 
+  rename("old.value"=value) %>% 
+  select(uuid,loop_index,variable,issue,old.value,new.value,explanation)
+
+cleaning.log.outliers <- rbind(cleaning.log.outliers,res.outliers_main)
+
+save.follow.up.requests(cleaning.log.outliers)  
+
+#------------------------------------------------------------------------------------------------------------
+# --> edit the file
+# --> Manually check outliers and change to NA (Decision made with country FPS)
+# --> save new file as outliers_responses_edited.xlsx in output/checking/responses/
+#------------------------------------------------------------------------------------------------------------
+
+# RUN ONLY IF Anything need to be changed
+
+outlier.recode <- load.edited(dir.responses, "outliers")
+outlier.check <- load.edited(dir.requests, "outliers")
+
+if (nrow(outlier.check) != nrow(outlier.recode)) warning("Number of rows are not matching")
+
+cleaning.log.outliers <- outlier.recode %>%
+  select(uuid,loop_index,variable,issue,old.value,new.value) %>%
+  filter(is.na(new.value))
+
+raw.main <- raw.main %>% 
+  apply.changes(cleaning.log.outliers)
+
+cleaning.log <- rbind(cleaning.log,cleaning.log.outliers)
 
 
 #-------------------------------------------------------------------------------
-# 7) Remove PII columns, apply any last changes, then save cleaned dataset
+# 6) Remove PII columns, apply any last changes, then save cleaned dataset
 ################################################################################
 
 # finalize cleaning log:
@@ -823,7 +920,7 @@ write.xlsx(cleaning.log, make.filename.xlsx("output/cleaning_log", "cleaning_log
 if(!"main.data.previous" %in% ls()) {
   warning("main.data.previous was not found! Are you sure you don't have a previous data_log that you can load?")
   new.main <- raw.main
-  new.loop1 <- raw.loop1
+  # new.loop1 <- raw.loop1
   # new.loop2 <- raw.loop2
 }else{
   # check if there are any columns somehow added during this cleaning process
@@ -838,7 +935,7 @@ if(!"main.data.previous" %in% ls()) {
     }}
   
   new.main  <- bind_rows(main.data.previous, raw.main) %>% filter(!uuid %in% deletion.log.whole$uuid)
-  new.loop1 <- bind_rows(loop1.previous, raw.loop1) %>% filter(!uuid %in% deletion.log.whole$uuid)
+  # new.loop1 <- bind_rows(loop1.previous, raw.loop1) %>% filter(!uuid %in% deletion.log.whole$uuid)
   # new.loop2 <- bind_rows(loop2.previous, raw.loop2) %>% filter(!uuid %in% deletion.log.whole$uuid)
 }
 pii.to.remove_main <- c(
@@ -865,4 +962,5 @@ write.xlsx(datasheets_anon, make.filename.xlsx("output/final", "final_anonymized
 
 source("src/count_enum_performance.R")
 source("package4validation.R")
+
 cat("\nD O N E\n")
