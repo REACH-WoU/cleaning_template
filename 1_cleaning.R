@@ -12,10 +12,14 @@ source("src/init.R")
 
 source("src/load_Data.R")
 
+cat(paste0("Always make sure to change the name of your output files in the function make.short.name in place of the ???"))
 # small utility functions
-make.short.name <- function(name, no_date = F) return(gsub("__","_", paste0("HSM_", name, ifelse(no_date, "", paste0("_", dctime_short)))))
+make.short.name <- function(name, no_date = F) return(gsub("__","_", paste0("???_", name, ifelse(no_date, "", paste0("_", dctime_short)))))
 make.filename.xlsx <- function(dir = ".", name, no_date = F) return(gsub("//","/", paste0(dir, "/", make.short.name(name, no_date), ".xlsx")))
 
+
+## Section below only for research cycles that requires cleaning on regular basis and use one kobo server. 
+cat(paste0("Section below only for research cycles that requires cleaning on regular basis and use one kobo server."))
 #-------------------------------------------------------------------------------
 # 
 # uuids_to_remove <- c()
@@ -44,14 +48,11 @@ make.filename.xlsx <- function(dir = ".", name, no_date = F) return(gsub("//","/
 #                                        ##
 ########################################
 raw.main <- kobo.raw.main
+## Add loops if needed. 
+
 # Change in the tool 
-cols_remove <- c(
-  "d6_sanitation/none_of_the_above",
-  "g2_vulnerable_IDP/none_of_the_above"
-)
 ## Add any changes to the tool?
-raw.main <- raw.main %>%
-  select(-any_of(cols_remove, vars = NULL))
+
 tool.survey <- tool.survey %>% 
   mutate(datasheet = "main")
 #-------------------------------------------------------------------------------
@@ -62,18 +63,15 @@ raw.main <- raw.main %>%
   rename(submission_time = "_submission_time") %>% 
   rename_all(~sub("_geolocation","geolocation", .x)) 
 
-
 cols_to_drop_main <- c(
   tool.survey %>% filter(type == "note") %>% pull(name),      # all note columns
   colnames(raw.main)[str_starts(colnames(raw.main), "_")]     # all columns with names starting with underscore
 )
 
-
-
-
 raw.main <- raw.main %>% select(-any_of(cols_to_drop_main, vars=NULL)) %>% relocate(uuid)
 # raw.loop1 <- raw.loop1 %>% select(-starts_with("_")) %>% relocate(uuid)  # all columns with names starting with underscore
 # raw.loop2 <- raw.loop2 %>% select(-starts_with("_")) %>% relocate(uuid)  # all columns with names starting with underscore
+# or more
 
 # fix dates:
 date_cols_main <- c("date_survey","start","end", tool.survey %>% filter(type == "date" & datasheet == "main") %>% pull(name),
@@ -86,21 +84,16 @@ raw.main <- raw.main %>%
 #   mutate_at(date_cols_loop2, ~ifelse(!str_detect(., '-'), as.character(convertToDateTime(as.numeric(.))), .))
 
 rm(cols_to_drop_main, date_cols_main)  
-
-# # for ROM: move staff to enumerator_num
-# if(country == "Romania"){
-#   raw.main <- raw.main %>% 
-#     mutate(enumerator_num = ifelse(isna(enumerator_num), staff, enumerator_num)) %>% 
-#     select(-staff)
-# }
-
 #-------------------------------------------------------------------------------
 
 
 # this space for modifying the tool & data because of changes introduced during the data collection
 # (hopefully not too many)
-
-
+cols_remove <- c(
+  ## add columns to be removed
+)
+raw.main <- raw.main %>%
+  select(-any_of(cols_remove, vars = NULL))
 # there is also a suspicious column `resp_age_adult` at the end of data which is not in the tool...
 
 
@@ -156,16 +149,8 @@ if(nrow(audits) == 0) {audits.summary <- tibble(uuid = raw.main$uuid, tot.rt = N
 }else{
   audits.summary <- audits %>% 
     group_by(uuid) %>% 
-    group_modify(~process.uuid(.x)) #### TO DEBUGGGGGG
+    group_modify(~process.uuid(.x))
 }
-
-
-test <- audi %>% 
-  filter(uuid %in% c("00356cbb-ca60-4404-890b-5e460777fa1b","00802536-a749-49e3-9987-0d6936360b22"))
-
-test <- test %>% 
-  group_by(uuid) %>% 
-  group_modify(.,.f = ~process.uuid(.x))
 
 data.audit <- raw.main %>% 
   mutate(duration_mins = difftime(as.POSIXct(end), as.POSIXct(start), units = 'mins'),
@@ -211,20 +196,13 @@ deletion.log.too.fast <- create.deletion.log(raw.main %>% filter(uuid %in% ids),
                                              enum_colname, "Survey duration deemed too fast.")
 # soft duplicates to remove:
 ids <- c(
-
-  "2e1705d6-e4c9-473f-a033-8c7fe970ae87",
-  "f1799f61-d0d4-4c4e-8623-42acde6912ac",
-  "12295fb2-497d-42f5-9921-11ce3a047434",
-  "219e43f2-f963-4aa7-b321-3b044caf2c9d",
-  "6c6b57e6-8590-4657-9ae9-d25cc6b386ee",
-  "fc2f01f7-5a3b-49a4-85b0-ff3e38b20667"
   
 )
 deletion.log.softduplicates <- create.deletion.log(raw.main %>% filter(uuid %in% ids),
                                                    enum_colname, "Soft duplicate")
 # incomplete submissions to remove:
 ids <- c(
-  # "f714b2cf-3006-4942-bc1f-11d55a2f44f5"  # POL
+  
 )
 deletion.log.incomplete <- create.deletion.log(raw.main %>% filter(uuid %in% ids), enum_colname, "Incomplete submission")
 
@@ -240,11 +218,11 @@ raw.main  <- raw.main[! (raw.main$uuid  %in% deletion.log.audits$uuid),]
 
 rm(ids, deletion.log.too.fast, deletion.log.softduplicates)
 
-
 #-------------------------------------------------------------------------------
 # 3) LOOP INCONSITENCIES + SPATIAL CHECKS
 ################################################################################
-
+cat(paste0("This section is only for assessments that includes loops and need to be checked with their respective calculations."))
+cat(paste0("Make sure to adjust variable names accordingly."))
 ## check for inconsistency in loops:
 
 counts_loop1 <- raw.loop1 %>% 
@@ -265,17 +243,15 @@ if(nrow(loop_counts_main) > 0){
 # DECISION: what to do with these inconsistencies?
 
 ids_to_clean <- c(
-  # put here the uuids for which hh_size should be adjusted
-  # "5a161089-3d5f-4994-868e-62f2c4d91dbe" # POL
-  "5745d0f1-3f8f-4eb6-87a2-1ae7832f6216",
-  "9d568420-8c2d-44fc-a9ba-62a13ec1ba45"
+  # put here the uuids for which *variable* should be adjusted
 )
 loop_indexes_to_delete <- c(
   # put here the loop indexes which should be removed
+  
 )
 ids_to_delete <- c(
   # uuids of submissions that will be totally removed
-  # "0383549a-71f5-4657-87a6-041dc457d36b"  # POL
+
 )
 
 cleaning.log.loop_inconsitency <- loop_counts_main %>% 
@@ -312,7 +288,7 @@ rm(ids_to_clean, loop_indexes_to_delete, counts_loop1)
 #-------------------------------------------------------------------------------
 
 ## GPS checks
- 
+warning("No need to run if GPS checks is not needed.")
 
 ## In case any needed 
 # run this section always (if POL) ------------------------  -------------------
@@ -453,16 +429,16 @@ save.other.requests(create.translate.requests(other.db, other.responses.j, is.lo
 # THERE IS NOTHING TO TRANSLATE UNTIL WE GET SOME DATA FROM LOOP2
 
 # translate all text questions, but skip these columns:
-trans_cols_to_skip <- c("identification", "no_consent_reasons")
+trans_cols_to_skip <- c(
+  # add columns to skip
+  )
 trans.db <- get.trans.db() %>% filter(!name %in% trans_cols_to_skip)
 
 # trans.db.main <- trans.db[trans.db$name %in% colnames(raw.main),]
 # trans.responses.main <- rbind(find.responses(raw.main, trans.db.main))
 
-# there are actually no text questions in main or loop1
-
-# trans.db.loop2 <- trans.db[trans.db$name %in% colnames(raw.loop2),]
-# trans.responses.loop2 <- find.responses(raw.loop2, trans.db.loop2, is.loop = T)
+# trans.db.loop1 <- trans.db[trans.db$name %in% colnames(raw.loop1),]
+# trans.responses.loop1 <- find.responses(raw.loop1, trans.db.loop1, is.loop = T)
 
 trans.responses <- rbind(trans.responses.loop2)
 trans.responses.j <- trans.responses %>% translate.responses
@@ -472,125 +448,37 @@ save.trans.requests(create.translate.requests(trans.db, trans.responses.j, is.lo
 
 # ------------------------------------------------------------------------------
 # AFTER RECEIVING FILLED-OUT OTHER requests:
-cleaning.log <- data.frame() #### Please remove if you hve loops
-cleaning.log.other <- data.frame()
+warning("!!!!Please remove cleaning.log line below if you have loops!!!!")
+cleaning.log <- data.frame() 
+
 or.request <- load.requests(dir.requests,  make.short.name("other_requests", no_date = T), sheet = "Sheet2") 
 or.edited  <- load.requests(dir.responses, make.short.name("other_requests", no_date = T),
                             sheet = "Sheet2", validate = T) # specify Sheet2 because the first one is a readme
-if (nrow(or.request) != nrow(or.edited)) stop("Number of rows differs between or.request and or.edited!")
 
-or.true.and.recode <- filter(or.edited, check == 1)
-if (nrow(or.true.and.recode) > 0){
-  cat(paste0("Multiple columns selected in ", nrow(or.true.and.recode)," or.edited entries:\n",
-             paste0(or.true.and.recode %>% pull(uuid), collapse = "\n")), sep = "\n")
-  if(any(or.true.and.recode$ref.type != "select_multiple")) stop("One of those is not a select_multiple!!!")
-  # if(any(!is.na(or.true.and.recode$loop_index))) stop("Deal with loop code INSTEAD of UUID-LOOP-INDEX")
-  issue <- "Recoding other response"
-  for(r in 1:nrow(or.true.and.recode)){
-    x <- or.true.and.recode[r,]
-    # get list of choices from other response
-    if (str_detect(x$existing.v, ";")) {
-      choices <- str_trim(str_split(x$existing.v, ";")[[1]])
-    } else {
-      choices <- str_trim(str_split(x$existing.v, "\r\n")[[1]])
-    }
-    choices <- choices[choices!=""]
-    if(is.na(x$loop_index)){
-      old.value <- as.character(raw.main[raw.main$uuid==x$uuid[1], x$ref.name[1]])
-    } else {
-      old.value <- as.character(raw.loop1[raw.loop1$loop_index==x$loop_index[1], x$ref.name[1]])
-    }
-    
-    l <- str_split(old.value, " ")[[1]]
-    # add to the cleaning log each choice in the other response
-    for (choice in choices){
-      # set corresponding variable to "1" if not already "1"
-      list.name <- get.choice.list.from.name(x$ref.name)
-      new.code <- filter(tool.choices, list_name==list.name & !!sym(label_colname)==choice)
-      if (nrow(new.code)!=1){
-        warning(paste0("Choice is not in the list. UUID: ", x$uuid,"; recode.into: ", choice))
-        return("err")
-      }
-      variable.name <- paste0(x$ref.name, "/", new.code$name)
-      if(is.na(x$loop_index)){
-        if (variable.name %in% colnames(raw.main)){
-          old.boolean <- raw.main[[variable.name]][raw.main$uuid==x$uuid[1]]
-        } else warning("Column not found")
-      } else {
-        if (variable.name %in% colnames(raw.loop1)){
-          old.boolean <- raw.loop1[[variable.name]][raw.loop1$loop_index==x$loop_index[1]]
-        } else warning("Column not found")
-      }
-      df <- data.frame(uuid=x$uuid, loop_index=x$loop_index, variable=variable.name, issue=issue,
-                       old.value=old.boolean, new.value="1")
-      cleaning.log.other <<- rbind(cleaning.log.other, df)
-      l <- unique(c(l, new.code$name))
-    }
-    # update cumulative variable
-    new.value <- paste(sort(l), collapse=" ")
-    df <- data.frame(uuid=x$uuid, loop_index=x$loop_index, variable=x$ref.name, issue=issue,
-                     old.value=old.value, new.value=new.value)
-    cleaning.log.other <<- rbind(cleaning.log.other, df)
-  }
-  or.edited <- or.edited %>% filter(check == 2)
-}
+cleaning.log.other <- recode.others(raw.main,or.edited,"response.uk",is.loop = F)
 
-or.true <- filter(or.edited, !is.na(true.v))
-or.recode <- filter(or.edited, !is.na(existing.v))
-or.remove <- filter(or.edited, !is.na(invalid.v))
+## if you have more sheets use the following format
 
-
-# 1) handle invalid
-print(paste("Number of responses to be deleted:", nrow(or.remove)))
-if (nrow(or.remove)>0){
-  for (r in 1:nrow(or.remove)) {
-    if(is.na(or.remove$loop_index[r])){
-      add.to.cleaning.log.other.remove(raw.main, or.remove[r,])
-    } else{
-      add.to.cleaning.log.other.remove(raw.loop1, or.remove[r,])
-    } 
-  }
-} 
-
-
-# 2) handle recoding
-print(paste("Number of responses to be recoded:", nrow(or.recode)))
-if (nrow(or.recode)>0){
-  for (r in 1:nrow(or.recode)) {
-    if(is.na(or.recode$loop_index[r])){
-      add.to.cleaning.log.other.recode(raw.main, or.recode[r,])
-    } else {
-      add.to.cleaning.log.other.recode(raw.loop1, or.recode[r,])
-    }
-  }
-}
-
-# 3) handle true\
-or.true <- rbind(or.true, or.true.and.recode)
-print(paste("Number of responses to be translated:", nrow(or.true)))
-t <- or.true %>%
-  mutate(issue = "Translating other responses") %>%
-  rename(variable=name, old.value=response.uk, new.value=true.v) %>%
-  select(uuid, variable,issue, old.value, new.value)
-cleaning.log.other <- rbind(cleaning.log.other, t)
+# cleaning.log.other <- bind_rows(recode.others(raw.main,or.edited,"response.uk",is.loop = F),
+#                                 recode.others(raw.loop1,or.edited,"response.uk",is.loop = T),
+#                                 etc.)
 
 raw.main <- raw.main %>% 
   apply.changes(cleaning.log.other)
-#################################################################
-raw.main <- raw.main  %>%  apply.changes(cleaning.log.other_main)
-raw.loop2 <- raw.loop2 %>% apply.changes(cleaning.log.other_loop2, is.loop = T)
-#################################################################
+## add loops if needed. 
 
 cleaning.log <- bind_rows(cleaning.log, cleaning.log.other #, cleaning.log.other_loop2
                       ) 
 
-### ADD translation cleaning
+### ADD translation cleaning if needed. 
 
 #-------------------------------------------------------------------------------
 # 4) LOGIC CHECKS
 ################################################################################
 
 # 4A) direct cleaning
+
+## Change to match your assessment
 
 cleaning.log.checks.direct <- tibble()
 
