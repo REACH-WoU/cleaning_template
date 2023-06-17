@@ -32,11 +32,10 @@ filenames_resources <- list.files("resources", "(template)|(tool)|(readme)", ful
 
 # source:
 filenames_R <- list.files(pattern = "*.R$", recursive = T, full.names = T)
-filenames_R <- filenames_R[stringr::str_detect(filenames_R, "(api\\.key)|(validation)", T)]
+#filenames_R <- filenames_R[stringr::str_detect(filenames_R, "(api\\.key)|(validation)", T)]
 
 files_to_zip <- c(filename_kobo_raw,
                   filename_data_final,
-                  filename_checking_audit,
                   filename_checking_outliers,
                   filename_checking_requests,
                   filename_checking_responses,
@@ -47,11 +46,11 @@ files_to_zip <- c(filename_kobo_raw,
                   filenames_R)
 
 ####### WARNING - SENSITIVE ######
-pwd <- "REACH_PP2_ROM_2023"   # <- this is a password to the zip archive, kept in plain text. this means that obviously you don't push this file to git and don't share it
+pwd <- "JMMI_R8"   # <- this is a password to the zip archive, kept in plain text. this means that obviously you don't push this file to git and don't share it
 ##################################
   
   
-zip(paste0("PP_ROM_Cleaning_2023"), files_to_zip, flags = paste("-P", pwd))
+zip(paste0("JMMI_R8_Customers_Cleaning_2023"), files_to_zip, flags = paste("-P", pwd))
 
 #    D O N E
 cat("\n DONE \n")

@@ -12,15 +12,15 @@ cleaning.log$variable_clean <- NULL
 cleaning <- cleaning %>% rename(variable = "variable_clean", action = "issue")
 
 ## Removed Variables (add or remove loops)
-total_columns_rawmain <- colnames(read_xlsx("data/inputs/kobo_export/ROM_PP2_rawdata.xlsx", sheet = 1, col_types = "text")) %>% unique
-total_columns_rawloop1 <- colnames(read_xlsx("data/inputs/kobo_export/ROM_PP2_rawdata.xlsx", sheet = 2, col_types = "text")) %>% unique
+total_columns_rawmain <- colnames(read_xlsx("data/inputs/kobo_export/UKR2203_JMMI_Questionnaire_Retailers_R14_10MAY2023_OS_WFP.xlsx", sheet = 1, col_types = "text")) %>% unique
+#total_columns_rawloop1 <- colnames(read_xlsx("data/inputs/kobo_export/ROM_PP2_rawdata.xlsx", sheet = 2, col_types = "text")) %>% unique
 final_columns_rawmain <- colnames(raw.main) %>% unique
-final_columns_rawloop1 <- colnames(raw.loop1) %>% unique
+#final_columns_rawloop1 <- colnames(raw.loop1) %>% unique
 removed_columns_main <- setdiff(total_columns_rawmain, final_columns_rawmain)
-removed_columns_loop1  <- setdiff(total_columns_rawloop1, final_columns_rawloop1)
+#removed_columns_loop1  <- setdiff(total_columns_rawloop1, final_columns_rawloop1)
 ##update the removed columns depending on number of loops
-removed_columns <- c(removed_columns_main,removed_columns_loop1)
-cleaning_removed <- data.frame(variable = removed_columns, action = "Columns removed", observations_affected = NA)
+#removed_columns <- c(removed_columns_main,removed_columns_loop1)
+cleaning_removed <- data.frame(variable = removed_columns_main, action = "Columns removed", observations_affected = NA)
 cleaning <- rbind(cleaning, cleaning_removed)
 
 ## Variables not changed
@@ -30,21 +30,21 @@ cleaning <- rbind(cleaning, cleaning_not_changed)
 
 ##Variables added
 added_columns_main <- setdiff(final_columns_rawmain,total_columns_rawmain)
-added_columns_loop1  <- setdiff( final_columns_rawloop1,total_columns_rawloop1)
+#added_columns_loop1  <- setdiff( final_columns_rawloop1,total_columns_rawloop1)
 if("uuid"%in%added_columns_main){
   if("submission_time"%in%added_columns_main){
-  added_columns_main <- added_columns_main[!added_columns_main %in% c("uuid","submission_time")]
+    added_columns_main <- added_columns_main[!added_columns_main %in% c("uuid","submission_time")]
   }
 }
 
-if("uuid"%in%added_columns_loop1){
-  if("parent_index"%in%added_columns_loop1){
-    added_columns_loop1 <- added_columns_loop1[!added_columns_loop1 %in% c("uuid","parent_index")]
-  }
-}
+#if("uuid"%in%added_columns_loop1){
+#  if("parent_index"%in%added_columns_loop1){
+#    added_columns_loop1 <- added_columns_loop1[!added_columns_loop1 %in% c("uuid","parent_index")]
+#  }
+#}
 
-added_columns <- c(added_columns_main,added_columns_loop1)
-cleaning_added <- data.frame(variable = added_columns, action = "Columns added", observations_affected = NA)
-cleaning <- rbind(cleaning, cleaning_added)
+#added_columns <- c(added_columns_main)
+#cleaning_added <- data.frame(variable = added_columns, action = "Columns added", observations_affected = NA)
+#cleaning <- rbind(cleaning, cleaning_added)
 
 write.xlsx(cleaning, "output/cleaning_log/summary.xlsx")
