@@ -19,8 +19,8 @@ enum_colname <- "a2_1_enum_id"
 
 
 dir.audits <- "data/inputs/reach/"
-dir.requests <- "output/checking/requests/"
-dir.responses <- "output/checking/responses/"
+dir.requests <- paste0("output/", JMMI_variable, "/checking/requests/")
+dir.responses <- paste0("output/", JMMI_variable, "/checking/responses/")
 
 
 label_colname <- "label::English" ### CHANGE the label_colname to whatever fits properly

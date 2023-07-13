@@ -3,7 +3,7 @@
 # and loads the data into kobo.raw.main, kobo.raw.loop1...
 # also included are the standard steps of renaming uuid, and adding the loop_index
 
-raw_data_filename <- list.files("data/inputs/kobo_export/", full.names = T)
+raw_data_filename <- list.files(paste0("data/inputs/kobo_export/", JMMI_variable, "/"), full.names = T)
 
 if(length(raw_data_filename) > 1) { stop("Found multiple files containing raw Kobo data! Please clean up the kobo_export folder.")
 }else if(length(raw_data_filename) == 0){ 

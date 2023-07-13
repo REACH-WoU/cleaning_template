@@ -1,6 +1,6 @@
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 rm(list = ls())
-
+JMMI_variable <- "Retailers"
 ####################
 ##  LOAD Tool     ##
 ####################
@@ -13,7 +13,7 @@ source("src/init.R")
 source("src/load_Data.R")
 
 # small utility functions
-make.short.name <- function(name, no_date = F) return(gsub("__","_", paste0("JMMI_Retailers_R15_", name, ifelse(no_date, "", paste0("_", dctime_short)))))
+make.short.name <- function(name, no_date = F) return(gsub("__","_", paste0("JMMI_", JMMI_variable, "_R15_", name, ifelse(no_date, "", paste0("_", dctime_short)))))
 make.filename.xlsx <- function(dir = ".", name, no_date = F) return(gsub("//","/", paste0(dir, "/", make.short.name(name, no_date), ".xlsx")))
 
 #cleaning.log <- read.xlsx("resources/cleaning_log.xlsx")
@@ -55,7 +55,7 @@ raw.main <- kobo.raw.main
 raw.main <- kobo.raw.main
 
 #######################  Customers ############################################
-
+if (JMMI_variable == "Customers") {
 # Change in the tool 
 cols_remove <- c(
   "b3_warm_clothes",
@@ -120,46 +120,49 @@ cols_remove <- c(
   "b16_1_financial_factors_other"
   
 )
+}
 ##############################################################################
 
-## Retailers #################################################################
+############### Retailers #####################################################
 
-#Change in the tool
-# cols_remove <- c(
-#   "u2_food_supply",
-#   "u2_1_food_supply_hromada",
-#   "u2_2_food_supply_raion",
-#   "u2_3_food_supply_oblast",
-#   "u2_4_food_supply_ukraine",
-#   "u2_5_food_supply_ru_bel",
-#   "u2_6_food_supply_foreign",
-#   "u2_6_1_food_supply_foreign_other",
-#   "food_check",
-#   "food_check_note",
-#   "u4_nfi_supply",
-#   "u4_1_nfi_supply_hromada",
-#   "u4_2_nfi_supply_raion",
-#   "u4_3_nfi_supply_oblast",
-#   "u4_4_nfi_supply_ukraine",
-#   "u4_5_nfi_supply_ru_bel",
-#   "u4_6_nfi_supply_foreign",
-#   "u4_6_1_nfi_supply_foreign_other",
-#   "nfi_check",
-#   "nfi_check_note",
-#   "x2_cash_limitation",
-#   "x3_credit_cards_limitation",
-#   "x4_debit_cards_limitation",
-#   "x5_mobile_apps_limitation",
-#   "x6_vouchers_limitation",
-#   "x7_other_limitation",
-#   "x8_cash_markup",
-#   "x9_credit_cards_markup",
-#   "x10_debit_cards_markup",
-#   "x11_mobile_apps_markup",
-#   "x12_vouchers_markup",
-#   "x13_other_markup"
-# 
-# )
+##Change in the tool
+if (JMMI_variable == "Retailers") {
+cols_remove <- c(
+  "u2_food_supply",
+  "u2_1_food_supply_hromada",
+  "u2_2_food_supply_raion",
+  "u2_3_food_supply_oblast",
+  "u2_4_food_supply_ukraine",
+  "u2_5_food_supply_ru_bel",
+  "u2_6_food_supply_foreign",
+  "u2_6_1_food_supply_foreign_other",
+  "food_check",
+  "food_check_note",
+  "u4_nfi_supply",
+  "u4_1_nfi_supply_hromada",
+  "u4_2_nfi_supply_raion",
+  "u4_3_nfi_supply_oblast",
+  "u4_4_nfi_supply_ukraine",
+  "u4_5_nfi_supply_ru_bel",
+  "u4_6_nfi_supply_foreign",
+  "u4_6_1_nfi_supply_foreign_other",
+  "nfi_check",
+  "nfi_check_note",
+  "x2_cash_limitation",
+  "x3_credit_cards_limitation",
+  "x4_debit_cards_limitation",
+  "x5_mobile_apps_limitation",
+  "x6_vouchers_limitation",
+  "x7_other_limitation",
+  "x8_cash_markup",
+  "x9_credit_cards_markup",
+  "x10_debit_cards_markup",
+  "x11_mobile_apps_markup",
+  "x12_vouchers_markup",
+  "x13_other_markup"
+
+)
+}
 
 ###############################################################################
 ## Add any changes to the tool?
@@ -220,7 +223,7 @@ rm(cols_to_drop_main, date_cols_main)
 # Addded this piece to add the missing data due to some old version submissions
 
 ################ Customers ####################################################
-
+if (JMMI_variable == "Customers") {
 missing_data <- raw.main %>%
   filter(is.na(raw.main["b17_access_stores/air_alert"]) | is.na(raw.main["b18_financial_factors/public_transportation"]) | is.na(is.na(raw.main["b7_vehicle_fuel/none"])))
 cols_missing_yn <- colnames(raw.main) %>%
@@ -252,8 +255,8 @@ cleaning.log.missing <- recode.missing(raw.main,c(cols_missing_01,cols_missing_n
                                        "correction due to old questionnaire version") %>% 
   distinct() %>% 
   filter(old.value %!=na% new.value)
-int_cols_main  <- tool.survey %>% filter(type == "decimal" & datasheet == "main") %>% pull(name)
-cl_999s <- recode.set.NA.if(raw.main, int_cols_main, "999", "replacing 999 with NA")
+#int_cols_main  <- tool.survey %>% filter(type == "decimal" & datasheet == "main") %>% pull(name)
+#cl_999s <- recode.set.NA.if(raw.main, int_cols_main, "999", "replacing 999 with NA")
 #cleaning.log <- bind_rows(cleaning.log.missing, cl_999s)
 cleaning.log <- cleaning.log.missing
 
@@ -285,11 +288,12 @@ raw.main <- raw.main %>%
 #   apply.changes(cleaning.log.enum)
 # 
 # cleaning.log <- bind_rows(cleaning.log,cleaning.log.enum)
+}
 ###############################################################################
 
 
 ########################  Retailers  ###########################################
-
+if (JMMI_variable == "Retailers") {
 missing_data <- raw.main %>%
   filter(is.na(raw.main["w3_access_stores/no_access_due_to_power_outages"]))
 cols_missing_yn <- colnames(raw.main) %>%
@@ -334,104 +338,104 @@ for (col_yn in cols_missing_yn) {
 
 # Here we recode labels to variables, which appeared because something wrong went with half of KIIS submissions
 
-kiis_dictionary <- tool.choices %>%
-  rename("from" = "label::English",
-         "to" = "name") %>%
-  subset(select = -list_name)
-kiis_dictionary$col <- ".global"
-tf <- data.frame( from = c("TRUE","FALSE"),
-                  to = c("1","0"),
-                  col = c(".global",".global")
-)
-kiis_dictionary <- rbind(kiis_dictionary,tf)
-select_one_multiple <- tool.survey %>% filter(str_starts(tool.survey$type, "select_"))
-cols_to_recode <- c(colnames(raw.main)[grepl("/",colnames(raw.main))],select_one_multiple$name)
+# kiis_dictionary <- tool.choices %>%
+#   rename("from" = "label::English",
+#          "to" = "name") %>%
+#   subset(select = -list_name)
+# kiis_dictionary$col <- ".global"
+# tf <- data.frame( from = c("TRUE","FALSE"),
+#                   to = c("1","0"),
+#                   col = c(".global",".global")
+# )
+# kiis_dictionary <- rbind(kiis_dictionary,tf)
+# select_one_multiple <- tool.survey %>% filter(str_starts(tool.survey$type, "select_"))
+# cols_to_recode <- c(colnames(raw.main)[grepl("/",colnames(raw.main))],select_one_multiple$name)
+# 
+# cleaning.log.labels <- recode.label.to.value(raw.main, cols_to_recode, kiis_dictionary$from, kiis_dictionary, "Recoding label to variable")
+# 
+# raw.main <- raw.main %>%
+#   matchmaker::match_df(dictionary = kiis_dictionary, from = "from",
+#                        to = "to",
+#                        by = "col")
+# #cleaning.log <- bind_rows(cleaning.log,cleaning.log.labels)
+# raw.main <- raw.main %>%
+#   apply.changes(cleaning.log.labels)
+# 
+# ### Changing location (hromada name) due to enumerator error
+# location_error <- raw.main %>%
+#   filter(a7_current_hromada == "UA6802005" & a2_1_enum_id =="KIIS_004" & a8_current_settlement == "other")
+# location_error["a7_current_hromada"] <- "UA6802017"
+# 
+# cleaning.log.location <- location_error %>% select("uuid") %>% mutate(variable = "a7_current_hromada",
+#                                                                       old.value="UA6802005", new.value= "UA6802017",
+#                                                                       issue= "correction due to enumerator error")
+# 
+# 
+# cleaning.log <- bind_rows(cleaning.log,cleaning.log.location)
+# 
+# raw.main <- raw.main %>%
+#   apply.changes(cleaning.log)
+# 
+# ##Cleaning KIIS part of data
+# 
+# kiis_dictionary_part2 <- data.frame()
+# kiis_dictionary_part2 <- tool.choices %>% select(name)
+# colnames(kiis_dictionary_part2)[1] <- "from"
+# kiis_dictionary_part2$to <- "1"
+# kiis_dictionary_part2$col <- ".global"
+# 
+# 
+# 
+# multiple_choice <- tool.survey %>% filter(str_detect(type, "select_multiple"))
+# multiple_choice_col <- c(multiple_choice$name)
+# 
+# 
+# # Initialize a list to store the cleaning logs
+# cleaning_logs <- list()
+# cleaning_logs1 <- list()
+# 
+# # Iterate over each value in multiple_choice_col_values
+# for (value in multiple_choice_col) {
+#   multiple_choice_col_values <- strsplit(multiple_choice_col, ", ")[[value]]
+#   raw.main.multiple_choice_col <- colnames(raw.main) %>%
+#     str_subset(pattern = paste0(value, "(?!_other)"))
+#   raw.main.multiple_choice_col_1 <- raw.main.multiple_choice_col[-1]
+# 
+#   cleaning.log.labels_part2 <- recode.label.to.value(raw.main, raw.main.multiple_choice_col_1, kiis_dictionary_part2$from, kiis_dictionary_part2, "correction due to different type of data")
+# 
+#   cleaning_logs1[[value]] <- cleaning.log.labels_part2
+#   raw.main <- raw.main %>%
+#     apply.changes(cleaning_logs1[[value]])
+# 
+#   kiis_data <- raw.main[!is.na(raw.main[, raw.main.multiple_choice_col[1]]), ]
+# 
+#   cols_to_replace <- names(kiis_data) %in% raw.main.multiple_choice_col_1
+# 
+#   kiis_data[, cols_to_replace][is.na(kiis_data[, cols_to_replace])] <- "0"
+# 
+#   cleaning.log.kiis_data <- recode.missing(raw.main, c(raw.main.multiple_choice_col_1), kiis_data, "correction due to different type of data") %>%
+#     distinct() %>%
+#     filter(old.value %!=na% new.value)
+# 
+#   # Store the cleaning log for each value
+#   cleaning_logs[[value]] <- cleaning.log.kiis_data
+# }
+# 
+# # Combine all cleaning logs into a single list
+# cleaning_log_combined <- do.call(rbind, cleaning_logs)
+# cleaning_log_combined1 <- do.call(rbind, cleaning_logs1)
+# 
+# cleaning_log_combined <- as.data.frame(cleaning_log_combined)
+# cleaning_log_combined1 <- as.data.frame(cleaning_log_combined1)
+# 
+# 
+# 
+# raw.main <- raw.main %>%
+#   apply.changes(cleaning_log_combined)
+# 
+# cleaning.log <- bind_rows(cleaning.log,cleaning_log_combined, cleaning_log_combined1, cleaning.log.labels)
 
-cleaning.log.labels <- recode.label.to.value(raw.main, cols_to_recode, kiis_dictionary$from, kiis_dictionary, "Recoding label to variable")
-
-raw.main <- raw.main %>%
-  matchmaker::match_df(dictionary = kiis_dictionary, from = "from",
-                       to = "to",
-                       by = "col")
-#cleaning.log <- bind_rows(cleaning.log,cleaning.log.labels)
-raw.main <- raw.main %>%
-  apply.changes(cleaning.log.labels)
-
-### Changing location (hromada name) due to enumerator error
-location_error <- raw.main %>%
-  filter(a7_current_hromada == "UA6802005" & a2_1_enum_id =="KIIS_004" & a8_current_settlement == "other")
-location_error["a7_current_hromada"] <- "UA6802017"
-
-cleaning.log.location <- location_error %>% select("uuid") %>% mutate(variable = "a7_current_hromada",
-                                                                      old.value="UA6802005", new.value= "UA6802017",
-                                                                      issue= "correction due to enumerator error")
-
-
-cleaning.log <- bind_rows(cleaning.log,cleaning.log.location)
-
-raw.main <- raw.main %>%
-  apply.changes(cleaning.log)
-
-##Cleaning KIIS part of data
-
-kiis_dictionary_part2 <- data.frame()
-kiis_dictionary_part2 <- tool.choices %>% select(name)
-colnames(kiis_dictionary_part2)[1] <- "from"
-kiis_dictionary_part2$to <- "1"
-kiis_dictionary_part2$col <- ".global"
-
-
-
-multiple_choice <- tool.survey %>% filter(str_detect(type, "select_multiple"))
-multiple_choice_col <- c(multiple_choice$name)
-
-
-# Initialize a list to store the cleaning logs
-cleaning_logs <- list()
-cleaning_logs1 <- list()
-
-# Iterate over each value in multiple_choice_col_values
-for (value in multiple_choice_col) {
-  multiple_choice_col_values <- strsplit(multiple_choice_col, ", ")[[value]]
-  raw.main.multiple_choice_col <- colnames(raw.main) %>%
-    str_subset(pattern = paste0(value, "(?!_other)"))
-  raw.main.multiple_choice_col_1 <- raw.main.multiple_choice_col[-1]
-
-  cleaning.log.labels_part2 <- recode.label.to.value(raw.main, raw.main.multiple_choice_col_1, kiis_dictionary_part2$from, kiis_dictionary_part2, "correction due to different type of data")
-
-  cleaning_logs1[[value]] <- cleaning.log.labels_part2
-  raw.main <- raw.main %>%
-    apply.changes(cleaning_logs1[[value]])
-
-  kiis_data <- raw.main[!is.na(raw.main[, raw.main.multiple_choice_col[1]]), ]
-
-  cols_to_replace <- names(kiis_data) %in% raw.main.multiple_choice_col_1
-
-  kiis_data[, cols_to_replace][is.na(kiis_data[, cols_to_replace])] <- "0"
-
-  cleaning.log.kiis_data <- recode.missing(raw.main, c(raw.main.multiple_choice_col_1), kiis_data, "correction due to different type of data") %>%
-    distinct() %>%
-    filter(old.value %!=na% new.value)
-
-  # Store the cleaning log for each value
-  cleaning_logs[[value]] <- cleaning.log.kiis_data
 }
-
-# Combine all cleaning logs into a single list
-cleaning_log_combined <- do.call(rbind, cleaning_logs)
-cleaning_log_combined1 <- do.call(rbind, cleaning_logs1)
-
-cleaning_log_combined <- as.data.frame(cleaning_log_combined)
-cleaning_log_combined1 <- as.data.frame(cleaning_log_combined1)
-
-
-
-raw.main <- raw.main %>%
-  apply.changes(cleaning_log_combined)
-
-cleaning.log <- bind_rows(cleaning.log,cleaning_log_combined, cleaning_log_combined1, cleaning.log.labels)
-
-
 ###############################################################################
 
 #-------------------------------------------------------------------------------
@@ -557,7 +561,7 @@ res.soft_duplicates <- find.similar.surveys(raw.main, tool.survey, uuid = "uuid"
   filter(number_different_columns <= 12)
 
 if(nrow(res.soft_duplicates) > 0){
-  write.xlsx(res.soft_duplicates, make.filename.xlsx("output/checking/audit/", "soft_duplicates"))
+  write.xlsx(res.soft_duplicates, make.filename.xlsx(paste0("output/", JMMI_variable, "/checking/audit/"), "soft_duplicates"))
 }else cat("\nThere are no soft duplicates to check :)")
 
 rm(audits, data.audit)
@@ -569,13 +573,13 @@ res.soft_duplicates <- find.similar.surveys(raw.main, tool.survey, uuid = "uuid"
   filter(number_different_columns <= 3)
 
 if(nrow(res.soft_duplicates) > 0){
-  write.xlsx(res.soft_duplicates, make.filename.xlsx("output/checking/audit/", "soft_duplicates"))
+  write.xlsx(res.soft_duplicates, make.filename.xlsx(paste0("output/", JMMI_variable, "/checking/audit/"), "soft_duplicates"))
 }else cat("\nThere are no soft duplicates to check :)")
 
 rm(audits, data.audit)
 
 #-------------------------------------------------------------------------------
-
+if (JMMI_variable == "Customers") {
 # DECISIONs:
 # interviews that were too fast and decided to be removed based on these uuids:
 ids <- c(
@@ -606,7 +610,39 @@ raw.main  <- raw.main[! (raw.main$uuid  %in% deletion.log.audits$uuid),]
 #################################################
 
 rm(ids, deletion.log.too.fast, deletion.log.softduplicates)
-
+}
+if (JMMI_variable == "Retailers") {
+  # DECISIONs:
+  # interviews that were too fast and decided to be removed based on these uuids:
+  ids <- c(
+    
+  )
+  deletion.log.too.fast <- create.deletion.log(raw.main %>% filter(uuid %in% ids),
+                                               enum_colname, "Survey duration deemed too fast.")
+  # soft duplicates to remove:
+  ids <- c(
+    "0505b714-bef4-444a-ac6d-7e7771009fb3"
+  )
+  deletion.log.softduplicates <- create.deletion.log(raw.main %>% filter(uuid %in% ids),
+                                                     enum_colname, "Soft duplicate")
+  # incomplete submissions to remove:
+  ids <- c(
+    
+  )
+  deletion.log.incomplete <- create.deletion.log(raw.main %>% filter(uuid %in% ids), enum_colname, "Incomplete submission")
+  
+  deletion.log.audits <- bind_rows(deletion.log.too.fast, deletion.log.softduplicates, deletion.log.incomplete)
+  deletion.log.new <- bind_rows(deletion.log.new, deletion.log.audits)
+  
+  #################################################
+  ##   removing fast submissions and duplicates  ##
+  raw.main  <- raw.main[! (raw.main$uuid  %in% deletion.log.audits$uuid),]
+  # raw.loop1 <- raw.loop1[!(raw.loop1$uuid %in% deletion.log.audits$uuid),]
+  # raw.loop2 <- raw.loop2[!(raw.loop2$uuid %in% deletion.log.audits$uuid),]
+  #################################################
+  
+  rm(ids, deletion.log.too.fast, deletion.log.softduplicates)
+}
 
 #-------------------------------------------------------------------------------
 # 3) LOOP INCONSITENCIES + SPATIAL CHECKS
@@ -844,26 +880,28 @@ save.other.requests(create.translate.requests(other.db, other.responses.j, is.lo
 ###########  Retailers ########################################################
 
 #To translate additional columns
-# 
-# to_translatex2_1 <- raw.main %>% select(uuid, x2_1_paymet_limitation) %>% mutate(variable = "x2_1_paymet_limitation") %>%
-#   filter(!is.na(x2_1_paymet_limitation))
-# colnames(to_translatex2_1)[2] <- "old.value"
-# to_translateu3_7 <- raw.main %>% select(uuid, u3_7_nfi_supplier_another_country) %>% mutate(variable = "u3_7_nfi_supplier_another_country") %>%
-#   filter(!is.na(u3_7_nfi_supplier_another_country))
-# colnames(to_translateu3_7)[2] <- "old.value"
-# to_translateu3_4 <- raw.main %>% select(uuid, u3_4_nfi_supply_another_country) %>% mutate(variable = "u3_4_nfi_supply_another_country")%>%
-#   filter(!is.na(u3_4_nfi_supply_another_country))
-# colnames(to_translateu3_4)[2] <- "old.value"
-# to_translateu2_7 <- raw.main %>% select(uuid, u2_7_food_supplier_another_country) %>% mutate(variable = "u2_7_food_supplier_another_country")%>%
-#   filter(!is.na(u2_7_food_supplier_another_country))
-# colnames(to_translateu2_7)[2] <- "old.value"
-# to_translateu2_4 <- raw.main %>% select(uuid, u2_4_food_supply_another_country) %>% mutate(variable = "u2_4_food_supply_another_country")%>%
-#   filter(!is.na(u2_4_food_supply_another_country))
-# colnames(to_translateu2_4)[2] <- "old.value"
-# to_translate <- rbind(to_translatex2_1, to_translateu3_7, to_translateu3_4, to_translateu2_7, to_translateu2_4)
-# write.xlsx(to_translate, "output/checking/requests/to_translate.xlsx")
-# 
-# rm(to_translatex2_1, to_translateu3_7, to_translateu3_4, to_translateu2_7, to_translateu2_4, to_translate)
+if (JMMI_variable == "Retailers") {
+
+to_translatex2_1 <- raw.main %>% select(uuid, x2_1_paymet_limitation) %>% mutate(variable = "x2_1_paymet_limitation") %>%
+  filter(!is.na(x2_1_paymet_limitation))
+colnames(to_translatex2_1)[2] <- "old.value"
+to_translateu3_7 <- raw.main %>% select(uuid, u3_7_nfi_supplier_another_country) %>% mutate(variable = "u3_7_nfi_supplier_another_country") %>%
+  filter(!is.na(u3_7_nfi_supplier_another_country))
+colnames(to_translateu3_7)[2] <- "old.value"
+to_translateu3_4 <- raw.main %>% select(uuid, u3_4_nfi_supply_another_country) %>% mutate(variable = "u3_4_nfi_supply_another_country")%>%
+  filter(!is.na(u3_4_nfi_supply_another_country))
+colnames(to_translateu3_4)[2] <- "old.value"
+to_translateu2_7 <- raw.main %>% select(uuid, u2_7_food_supplier_another_country) %>% mutate(variable = "u2_7_food_supplier_another_country")%>%
+  filter(!is.na(u2_7_food_supplier_another_country))
+colnames(to_translateu2_7)[2] <- "old.value"
+to_translateu2_4 <- raw.main %>% select(uuid, u2_4_food_supply_another_country) %>% mutate(variable = "u2_4_food_supply_another_country")%>%
+  filter(!is.na(u2_4_food_supply_another_country))
+colnames(to_translateu2_4)[2] <- "old.value"
+to_translate <- rbind(to_translatex2_1, to_translateu3_7, to_translateu3_4, to_translateu2_7, to_translateu2_4)
+write.xlsx(to_translate, "output/Retailers/checking/requests/to_translate.xlsx")
+
+rm(to_translatex2_1, to_translateu3_7, to_translateu3_4, to_translateu2_7, to_translateu2_4, to_translate)
+}
 
 ###############################################################################
 # ------------------------------------------------------------------------------
@@ -972,15 +1010,25 @@ t <- or.true %>%
   rename(variable=name, old.value=response.uk, new.value=true.v) %>%
   select(uuid, variable,issue, old.value, new.value)
 ####################### Customers ############################################
-#cleaning.log.other <- rbind(cleaning.log.other, t)
-##############################################################################
-
-###################  Retailers ################################################
- cleaning.log.other <- rbind(cleaning.log.other, t, to_translate)
-###############################################################################
+if (JMMI_variable == "Customers") {
+cleaning.log.other <- rbind(cleaning.log.other, t)
 
 raw.main <- raw.main %>% 
   apply.changes(cleaning.log.other)
+}
+##############################################################################
+
+###################  Retailers ################################################
+if (JMMI_variable == "Retailers") {
+  to_translate <- read_xlsx(paste0("output/", JMMI_variable, "/checking/responses/to_translate.xlsx"))
+  
+ cleaning.log.other <- rbind(cleaning.log.other, t, to_translate)
+ 
+ raw.main <- raw.main %>% 
+   apply.changes(cleaning.log.other)
+}
+###############################################################################
+
 #################################################################
 #raw.main <- raw.main  %>%  apply.changes(cleaning.log.other_main)
 #raw.loop2 <- raw.loop2 %>% apply.changes(cleaning.log.other_loop2, is.loop = T)
@@ -1148,7 +1196,7 @@ cleaning.log <- bind_rows(cleaning.log, cleaning.log.other #, cleaning.log.other
 # load("Environment.RData")
 
 ################  Retailers ###################################################
-
+if (JMMI_variable == "Retailers") {
 prices <- c(
   "b3_bread_price",
   "c3_eggs_price",
@@ -1208,7 +1256,7 @@ for (col in cols.integer_raw.main) {
              (value < mean(value) - n.sd*sd(value)),
            is.outlier.lin = (value.log > mean(value.log) + n.sd*sd(value.log)) |
              (value.log < mean(value.log) - n.sd*sd(value.log)))
-  values <- filter(values, is.outlier.lin) %>%  select(uuid, variable, value)
+  values <- filter(values, is.outlier.log) %>%  select(uuid, variable, value)
   if (nrow(values)>0) print(paste0(col, ": ", nrow(values), " outliers detected"))
   res.outliers_main <- rbind(res.outliers_main, values)
 }
@@ -1226,95 +1274,105 @@ res.outliers_main <- res.outliers_main %>%
 
 cleaning.log.outliers <- rbind(cleaning.log.outliers,res.outliers_main)
 cleaning.log.outliers$check.id <- 1
-save.follow.up.requests(cleaning.log.outliers,"JMMI_Retailers_R15_outliers_requests.xlsx")
+save.follow.up.requests(cleaning.log.outliers,"JMMI_Retailers_R15_outliers_log_requests.xlsx")
 
 ################################################################################
-write.xlsx(raw.main, "output/data_log/data.xlsx")
-
-################### Customers #################################################
-# save.image(file = "Environment.RData")
-# load("Environment.RData")
-
-cleaning.log.outliers <- data.frame()
-# define columns to check for outliers
-
-cols.integer_main <- filter(tool.survey, type == "decimal")
-cols.integer_raw.main <- cols.integer_main[cols.integer_main$name %in% colnames(raw.main),] %>% pull(name)
-# cols.integer_raw.loop1 <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop1),] %>% pull(name)
-
-# cols <- filter(tool.survey, str_starts(name, "G_3")) %>% pull(name)
-
-n.sd <- 2
-
-res.outliers_main <- data.frame()
-# res.outliers_loop1 <- data.frame()
-df.all <- data.frame()
-#------------------------------------------------------------------------------------------------------------
-# [MAIN SHEET] -> detect outliers 
-
-raw.main.outliers <- raw.main %>%
-  select("uuid", cols.integer_raw.main) %>%
-  mutate_at(cols.integer_raw.main, as.numeric)
-
-# Outliers per country
-
-for (col in cols.integer_raw.main) {
-  values <- raw.main.outliers %>% 
-    filter(!!sym(col) %_>_% 0) %>% 
-    rename(value=col) %>%  select(uuid, value) %>% 
-    mutate(value.log=log10(value)) %>%  mutate(variable=col) %>% 
-    mutate(is.outlier.lin = (value > mean(value) + n.sd*sd(value)) |
-             (value < mean(value) - n.sd*sd(value)),
-           is.outlier.log = (value.log > mean(value.log) + n.sd*sd(value.log)) |
-             (value.log < mean(value.log) - n.sd*sd(value.log)))
-  values <- filter(values, is.outlier.log) %>%  select(uuid, variable, value)
-  if (nrow(values)>0) print(paste0(col, ": ", nrow(values), " outliers detected"))
-  res.outliers_main <- rbind(res.outliers_main, values)
+write.xlsx(raw.main, "output/Retailers/data_log/data.xlsx")
 }
 
-#f.alpha <- function(x) return(ifelse(x, 1, 0))
-#
-## Outliers Boxplot generator per country
-#
-#df <- raw.main.outliers %>% 
-#  select(uuid, all_of(cols.integer_raw.main)) %>% 
-#  pivot_longer(-uuid, names_to = "variable", values_to = "value") %>% 
-#  mutate(value.log = log10(value)) %>% 
-#  left_join(select(res.outliers_main, -value) %>% mutate(is.outlier=T), by = c("uuid","variable")) %>% 
-#  mutate(is.outlier = ifelse(is.na(is.outlier), F, is.outlier)) %>% 
-#  filter(!is.na(value) & value>0)
-#df <- gather(df, key = "measure", value = "value", variable)
-#df.all <- rbind(df.all, df)
-#
-#
-#write.xlsx(df.all, paste0("output/checking/outliers/main_outlier_prices_analysis_", n.sd, "sd.xlsx"), overwrite=T)
-#
-## generating prices boxplots for same locations
-#g.outliers_main <- ggplot(df.all) +
-#  geom_boxplot(aes(x= measure, y=value.log), width = 0.2) + ylab("Values (log10)") +
-#  geom_point(aes(x=measure, y=value.log, group = measure), alpha=f.alpha(df.all$is.outlier), colour="red") +
-#  facet_wrap(~value, ncol = 4, scales = "free_y")+
-#  theme(axis.text.x = element_blank(),
-#        axis.ticks.x = element_blank())
-#
-#
-## Save
-#ggsave(paste0("output/checking/outliers/main_outlier_prices_analysis_", n.sd, "sd.pdf"), g.outliers_main, 
-#       width = 40, height = 80, units = "cm", device="pdf")
-#
+################### Customers #################################################
+if (JMMI_variable == "Customers") {
+  # save.image(file = "Environment.RData")
+  # load("Environment.RData")
+  
+  cleaning.log.outliers <- data.frame()
+  # define columns to check for outliers
+  
+  cols.integer_main <- filter(tool.survey, type == "decimal")
+  cols.integer_raw.main <- cols.integer_main[cols.integer_main$name %in% colnames(raw.main),] %>% pull(name)
+  # cols.integer_raw.loop1 <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop1),] %>% pull(name)
+  
+  # cols <- filter(tool.survey, str_starts(name, "G_3")) %>% pull(name)
+  
+  n.sd <- 2
+  
+  
+  
+  res.outliers_main <- data.frame()
+  # res.outliers_loop1 <- data.frame()
+  df.all <- data.frame()
+  #------------------------------------------------------------------------------------------------------------
+  # [MAIN SHEET] -> detect outliers 
+  
+  raw.main.outliers <- raw.main %>%
+    select("uuid", cols.integer_raw.main) %>%
+    mutate_at(cols.integer_raw.main, as.numeric)
+  
+  # Outliers per country
+  
+  for (col in cols.integer_raw.main) {
+    values <- raw.main.outliers %>% 
+      filter(!!sym(col) %_>_% 0) %>% 
+      rename(value=col) %>%  select(uuid, value) %>% 
+      mutate(value.log=log10(value)) %>%  mutate(variable=col) %>% 
+      mutate(is.outlier.lin = (value > mean(value) + n.sd*sd(value)) |
+               (value < mean(value) - n.sd*sd(value)),
+             is.outlier.log = (value.log > mean(value.log) + n.sd*sd(value.log)) |
+               (value.log < mean(value.log) - n.sd*sd(value.log)))
+    values <- filter(values, is.outlier.lin) %>%  select(uuid, variable, value)
+    if (nrow(values)>0) print(paste0(col, ": ", nrow(values), " outliers detected"))
+    res.outliers_main <- rbind(res.outliers_main, values)
+  }
+  
+  #f.alpha <- function(x) return(ifelse(x, 1, 0))
+  #
+  ## Outliers Boxplot generator per country
+  #
+  #df <- raw.main.outliers %>% 
+  #  select(uuid, all_of(cols.integer_raw.main)) %>% 
+  #  pivot_longer(-uuid, names_to = "variable", values_to = "value") %>% 
+  #  mutate(value.log = log10(value)) %>% 
+  #  left_join(select(res.outliers_main, -value) %>% mutate(is.outlier=T), by = c("uuid","variable")) %>% 
+  #  mutate(is.outlier = ifelse(is.na(is.outlier), F, is.outlier)) %>% 
+  #  filter(!is.na(value) & value>0)
+  #df <- gather(df, key = "measure", value = "value", variable)
+  #df.all <- rbind(df.all, df)
+  #
+  #
+  #write.xlsx(df.all, paste0("output/checking/outliers/main_outlier_prices_analysis_", n.sd, "sd.xlsx"), overwrite=T)
+  #
+  ## generating prices boxplots for same locations
+  #g.outliers_main <- ggplot(df.all) +
+  #  geom_boxplot(aes(x= measure, y=value.log), width = 0.2) + ylab("Values (log10)") +
+  #  geom_point(aes(x=measure, y=value.log, group = measure), alpha=f.alpha(df.all$is.outlier), colour="red") +
+  #  facet_wrap(~value, ncol = 4, scales = "free_y")+
+  #  theme(axis.text.x = element_blank(),
+  #        axis.ticks.x = element_blank())
+  #
+  #
+  ## Save
+  #ggsave(paste0("output/checking/outliers/main_outlier_prices_analysis_", n.sd, "sd.pdf"), g.outliers_main, 
+  #       width = 40, height = 80, units = "cm", device="pdf")
+  #
+  
+  # Output requests to check
+  res.outliers_main <- res.outliers_main %>% 
+    mutate(issue = "Outliers",
+           loop_index = NA,
+           new.value = NA,
+           explanation=NA) %>% 
+    rename("old.value"=value) %>% 
+    select(uuid,loop_index,variable,issue,old.value,new.value,explanation)
+  
+  cleaning.log.outliers <- rbind(cleaning.log.outliers,res.outliers_main)
+  cleaning.log.outliers$check.id <- 1
+  save.follow.up.requests(cleaning.log.outliers,"JMMI_Customers_R15_outliers_lin_requests.xlsx")  
 
-# Output requests to check
-res.outliers_main <- res.outliers_main %>% 
-  mutate(issue = "Outliers",
-         loop_index = NA,
-         new.value = NA,
-         explanation=NA) %>% 
-  rename("old.value"=value) %>% 
-  select(uuid,loop_index,variable,issue,old.value,new.value,explanation)
+  write.xlsx(raw.main, "output/Customers/data_log/data.xlsx")
+}
 
-cleaning.log.outliers <- rbind(cleaning.log.outliers,res.outliers_main)
-cleaning.log.outliers$check.id <- 1
-save.follow.up.requests(cleaning.log.outliers,"JMMI_Customers_R15_outliers_requests.xlsx")  
+
+
 
 ########## USE ONLY IF YOU ALREADY HAVE CLEANED OUTLIERS
 #Added this part to pull the data from the manually cleaned dataset to create the cleaning log
@@ -1351,7 +1409,7 @@ outlier.check <- load.requests(dir.requests, make.short.name("outliers_requests"
 if (nrow(outlier.check) != nrow(outlier.recode)) warning("Number of rows are not matching")
 
 cleaning.log.outliers <- outlier.recode %>%
-  select(uuid,loop_index,variable,issue,old.value,new.value) #%>%
+  select(uuid, variable,issue,old.value,new.value) #%>%
   #filter(is.na(new.value))
 
 #cleaning.log.outliers <- subset(cleaning.log.outliers, select = -loop_index)
@@ -1365,28 +1423,30 @@ raw.main <- raw.main %>%
 cleaning.log <- rbind(cleaning.log,cleaning.log.outliers)
 
 ####################### Retailers #############################################
-# 
-# raw.main <- raw.main %>%
-#   mutate(b3_bread_price_final_price = b3_bread_price %_/_% b3_1_bread_size * 500,
-#          c3_eggs_price_final_price = c3_eggs_price %_/_% c3_1_eggs_size * 10,
-#          d3_milk_price_final_price = d3_milk_price %_/_% d3_1_milk_size * 0.9,
-#          e3_potatoes_price_final_price = e3_potatoes_price %_/_% e3_1_potatoes_size * 1,
-#          f3_carrots_price_final_price = f3_carrots_price %_/_% f3_1_carrots_size * 1,
-#          g3_onions_price_final_price = g3_onions_price %_/_% g3_1_onions_size * 1,
-#          h3_cabbage_price_final_price = h3_cabbage_price %_/_% h3_1_cabbage_size * 1,
-#          i3_chicken_price_final_price = i3_chicken_price %_/_% i3_1_chicken_size * 1,
-#          j3_oil_price_final_price = j3_oil_price %_/_% j3_1_oil_size * 0.9,
-#          k3_flour_price_final_price = k3_flour_price %_/_% k3_1_flour_size * 1,
-#          l3_rice_price_final_price = l3_rice_price %_/_% l3_1_rice_size * 1,
-#          m3_buckwheat_price_final_price = m3_buckwheat_price %_/_% m3_1_buckwheat_size * 1,
-#          n3_water_price_final_price = n3_water_price %_/_% n3_1_water_size * 1.5,
-#          y3_cereal_porridge_price_final_price = y3_cereal_porridge_price %_/_% y3_1_cereal_porridge_size * 200,
-#          o3_diapers_price_final_price = o3_diapers_price %_/_% o3_1_diapers_size * 50,
-#          p3_body_soap_price_final_price = p3_body_soap_price %_/_% p3_1_body_soap_size * 75,
-#          r3_laundry_soap_price_final_price = as.numeric(r3_laundry_soap_price) %_/_% r3_1_laundry_soap_size * 200,
-#          q3_powder_price_final_price = q3_powder_price %_/_% q3_1_powder_size * 500,
-#          s3_toothpaste_price_final_price = s3_toothpaste_price %_/_% s3_1_toothpaste_size * 75,
-#          t3_pads_price_final_price = t3_pads_price %_/_% t3_1_pads_size * 10)
+if (JMMI_variable == "Retailers") {
+
+raw.main <- raw.main %>%
+  mutate(b3_bread_price_final_price = b3_bread_price %_/_% b3_1_bread_size * 500,
+         c3_eggs_price_final_price = c3_eggs_price %_/_% c3_1_eggs_size * 10,
+         d3_milk_price_final_price = d3_milk_price %_/_% d3_1_milk_size * 0.9,
+         e3_potatoes_price_final_price = e3_potatoes_price %_/_% e3_1_potatoes_size * 1,
+         f3_carrots_price_final_price = f3_carrots_price %_/_% f3_1_carrots_size * 1,
+         g3_onions_price_final_price = g3_onions_price %_/_% g3_1_onions_size * 1,
+         h3_cabbage_price_final_price = h3_cabbage_price %_/_% h3_1_cabbage_size * 1,
+         i3_chicken_price_final_price = i3_chicken_price %_/_% i3_1_chicken_size * 1,
+         j3_oil_price_final_price = j3_oil_price %_/_% j3_1_oil_size * 0.9,
+         k3_flour_price_final_price = k3_flour_price %_/_% k3_1_flour_size * 1,
+         l3_rice_price_final_price = l3_rice_price %_/_% l3_1_rice_size * 1,
+         m3_buckwheat_price_final_price = m3_buckwheat_price %_/_% m3_1_buckwheat_size * 1,
+         n3_water_price_final_price = n3_water_price %_/_% n3_1_water_size * 1.5,
+         y3_cereal_porridge_price_final_price = y3_cereal_porridge_price %_/_% y3_1_cereal_porridge_size * 200,
+         o3_diapers_price_final_price = o3_diapers_price %_/_% o3_1_diapers_size * 50,
+         p3_body_soap_price_final_price = p3_body_soap_price %_/_% p3_1_body_soap_size * 75,
+         r3_laundry_soap_price_final_price = as.numeric(r3_laundry_soap_price) %_/_% r3_1_laundry_soap_size * 200,
+         q3_powder_price_final_price = q3_powder_price %_/_% q3_1_powder_size * 500,
+         s3_toothpaste_price_final_price = s3_toothpaste_price %_/_% s3_1_toothpaste_size * 75,
+         t3_pads_price_final_price = t3_pads_price %_/_% t3_1_pads_size * 10)
+}
 ###############################################################################
 #-------------------------------------------------------------------------------
 # 6) Remove PII columns, apply any last changes, then save cleaned dataset
@@ -1398,16 +1458,16 @@ cleaning.log <- cleaning.log %>% distinct() %>%
   #filter(old.value %!=na% new.value) %>% 
   left_join(raw.main %>% select(uuid, any_of(enum_colname)))
 
-if (length(list.files(make.filename.xlsx("output/cleaning_log", "cleaning_log", no_date = T))) > 0) {
-  cleaning.log.previous <- read_xlsx(make.filename.xlsx("output/cleaning_log", "cleaning_log"))
+if (length(list.files(make.filename.xlsx(paste0("output/", JMMI_variable, "/cleaning_log"), "cleaning_log", no_date = T))) > 0) {
+  cleaning.log.previous <- read_xlsx(make.filename.xlsx(paste0("output/", JMMI_variable, "/cleaning_log"), "cleaning_log"))
   cleaning.log.whole <- rbind(cleaning.log.previous, cleaning.log)
 } else cleaning.log.whole <- cleaning.log
 
 # Output Cleaning Log
-write.xlsx(cleaning.log, make.filename.xlsx("output/cleaning_log", "cleaning_log", no_date = T), overwrite = T)
+write.xlsx(cleaning.log, make.filename.xlsx(paste0("output/", JMMI_variable, "/cleaning_log"), "cleaning_log", no_date = T), overwrite = T)
 
 # Output deletion Log
-write.xlsx(deletion.log.new, make.filename.xlsx("output/deletion_log", "deletion_log", no_date = T), overwrite = T)
+write.xlsx(deletion.log.new, make.filename.xlsx(paste0("output/", JMMI_variable, "/deletion_log"), "deletion_log", no_date = T), overwrite = T)
 
 
 
@@ -1437,7 +1497,7 @@ write.xlsx(deletion.log.new, make.filename.xlsx("output/deletion_log", "deletion
 #}
 
 
-
+if (JMMI_variable == "Customers") {
 
 ## revive columns due to old version of questionary
 cols_remove <- c(
@@ -1445,6 +1505,7 @@ cols_remove <- c(
   "b7_1_heating_fuel/none_heating"
   
 )
+
 ## Add any changes to the tool?
 raw.main <- raw.main %>%
   select(-any_of(cols_remove, vars = NULL))
@@ -1457,24 +1518,27 @@ pii.to.remove_main <- c(
   "audit_URL",
   "comments_enumerators")
 new.main.removed  <- raw.main %>% select(-any_of(pii.to.remove_main))
-
-
+}
 
 ##################### Retailers ##############################################
-# pii.to.remove_main <- c(
-#   "a10_name_retailer",
-#   "a11_branch_retailer",
-#   "a12_phone_number",
-#   "deviceid",
-#   "audit",
-#   "audit_URL",
-#   "z4_like_name_retailer",
-#   "z5_like_phone_number",
-#   "z6_like_hromada",
-#   "comments_enumerators"
-# )
+
+if (JMMI_variable == "Retailers") {
+
+pii.to.remove_main <- c(
+  "a10_name_retailer",
+  "a11_branch_retailer",
+  "a12_phone_number",
+  "deviceid",
+  "audit",
+  "audit_URL",
+  "z4_like_name_retailer",
+  "z5_like_phone_number",
+  "z6_like_hromada",
+  "comments_enumerators"
+)
 
 new.main.removed  <- raw.main %>% select(-any_of(pii.to.remove_main))
+}
 ##############################################################################
 
 
@@ -1482,14 +1546,14 @@ new.main.removed  <- raw.main %>% select(-any_of(pii.to.remove_main))
 # All data write excel
 datasheets <- list("main" = raw.main
                )
-write.xlsx(datasheets, make.filename.xlsx("output/data_log", "full_data"), overwrite = T,
+write.xlsx(datasheets, make.filename.xlsx(paste0("output/", JMMI_variable, "/data_log"), "full_data"), overwrite = T,
            zoom = 90, firstRow = T)
 
 # final (pii removed)
 datasheets_anon <- list("main" = new.main.removed
                         )
 raw.main <- raw.main %>% select(-any_of(pii.to.remove_main))
-write.xlsx(datasheets_anon, make.filename.xlsx("output/final", "final_clean_data"), overwrite = T,
+write.xlsx(datasheets_anon, make.filename.xlsx(paste0("output/", JMMI_variable, "/final"), "final_clean_data"), overwrite = T,
            zoom = 90, firstRow = T)
 
 source("src/count_enum_performance.R")
