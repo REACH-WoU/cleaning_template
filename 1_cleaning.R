@@ -51,6 +51,13 @@ cat(paste0("Section below only for research cycles that requires cleaning on reg
 raw.main <- data.list$main
 ## Add loops if needed. 
 
+# transform your columns into a date_time format.
+date_cols_main <- c("q0_1_date","start","end", tool.survey %>% filter(type == "date" & datasheet == "main") %>% pull(name),
+                    "submission_time")
+raw.main <- raw.main %>% 
+  mutate_at(date_cols_main, ~ifelse(!str_detect(., '-'), as.character(convertToDateTime(as.numeric(.))), .))
+
+
 #-------------------------------------------------------------------------------
 # 0) ANY CHANGES TO THE TOOL WHILE DATA COLLECTION :$
 ################################################################################
