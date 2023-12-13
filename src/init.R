@@ -2,10 +2,22 @@
 
 # loading all packages, functions and the Kobo tool
 if (!require("pacman")) install.packages("pacman")
+
+devtools::install_github('Nestor-Ch/utilityR')
+
 pacman::p_load(docstring, tidyverse, readxl, writexl, openxlsx, stringr, 
-               sf, geosphere, qdapRegex, cluster, randomcoloR, svDialogs, scales)
+               sf, geosphere, qdapRegex, cluster, randomcoloR, svDialogs, scales, janitor, utilityR)
+
+
+make.short.name <- function(name, no_date = F){
+  return(gsub("__","_", paste0("DS_r2_", name, ifelse(no_date, "", paste0("_", dctime_short)))))}
+
+make.filename.xlsx <- function(dir = ".", name, no_date = F) return(gsub("//","/", paste0(dir, "/", make.short.name(name, no_date), ".xlsx")))
+
+
 
 source("src/utils/misc_utils.R")
+source('src/utils/utils_analysis.R')
 source("src/utils/check_kobo.R")
 source("src/utils/kobo_utils.R")
 source("src/utils/regional_detect_data_falsification.R")
@@ -15,24 +27,13 @@ source("src/utils/utils_cleaning_loops.R")
 
 options(scipen = 999)
 options(dplyr.summarise.inform = FALSE)
-enum_colname <- "enum_id"
-
-dir.audits <- "data/inputs/audits/reach/"
-dir.requests <- "output/checking/requests/"
-dir.responses <- "output/checking/responses/"
-
-###############################################################################
-
-# input filnenames
-filename.tool <- "resources/tool.xlsx" ### CHANGE the tool name to whatever fits properly
-filename_path <- "hsm_data_r5.xlsx"
 ###############################################################################
 
 # load TOOL Refuggess
 cat("\n- LOADING tool ...\n")
 
-cat("\nLoading Kobo tool from file", filename.tool, "...\n")
-label_colname <- load.label_colname(filename.tool)
-tool.survey  <- load.tool.survey(filename.tool)
-tool.choices <- load.tool.choices(filename.tool)
+cat("\nLoading Kobo tool from file", directory_dictionary$filename.tool, "...\n")
+label_colname <- utilityR::load.label.colname(directory_dictionary$filename.tool)
+tool.survey  <- utilityR::load.tool.survey(directory_dictionary$filename.tool, label_colname = directory_dictionary$label_colname)
+tool.choices <- utilityR::load.tool.choices(directory_dictionary$filename.tool, label_colname = directory_dictionary$label_colname)
 cat("..OK\n")
