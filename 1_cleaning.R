@@ -14,7 +14,7 @@ directory_dictionary <- list(
   data_path = "data/inputs/kobo_export/", # the path to your dataframe
   label_colname = 'label::English', # the name of your label column. Has to be identical in Kobo survey and choices sheets
   dctime_short = "2023_01_01" # the data of your survey (just for naming)
-  )
+)
 
 
 api_key <- source('resources/microsoft.api.key_regional.R')$value
@@ -131,116 +131,43 @@ cleaning.log.checks.direct <- tibble()
 #############################################################################################################
 # save.image(file = "Environment.RData")
 # load("Environment.RData")
+n.sd <- 3
 
-cleaning.log.outliers <- data.frame()
-# define columns to check for outliers
+# specify methods for  detecting outliers
+method <- "o1"
 
-cols.integer_main <- filter(tool.survey, type == "integer")
-cols.integer_raw.main <- cols.integer_main[cols.integer_main$name %in% colnames(raw.main),] %>% pull(name)
-cols.integer_raw.loop1 <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop1),] %>% pull(name)
-cols.integer_raw.loop2 <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop2),] %>% pull(name)
-cols.integer_raw.loop3 <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop3),] %>% pull(name)
+# ignore 0 values or not
+ignore_0 <- T
 
-# cols <- filter(tool.survey, str_starts(name, "G_3")) %>% pull(name)
+# specify columns for check or leave them empty
+cols.integer_raw.main <- c()
+cols.integer_raw.loop1 <- c()
+cols.integer_raw.loop2 <- c()
+cols.integer_raw.loop3 <- c()
 
-n.sd <- 2
+# if you need one more loop you can add it here and in the src/section_6_detect_and_visualise_outliers.R
+# You can also remove redundant loop
 
-df.all <- data.frame()
-#------------------------------------------------------------------------------------------------------------
-# [MAIN SHEET] -> detect outliers 
+source('src/sections/section_6_detect_and_visualise_outliers.R')
 
+write.xlsx(raw.main.outliers, paste0("output/checking/outliers/main_outlier_analysis_", n.sd, "sd.xlsx"), overwrite=T)
 
+write.xlsx(raw.loop1.outliers, paste0("output/checking/outliers/loop1_outlier_analysis_", n.sd, "sd.xlsx"), overwrite=T)
 
-# Outliers 
+write.xlsx(raw.loop2.outliers, paste0("output/checking/outliers/loop2_outlier_analysis_", n.sd, "sd.xlsx"), overwrite=T)
 
-raw.main.outliers <- detect.outliers(
-  df = raw.main,
-  id = 'uuid',
-  colnames = cols.integer_raw.main,
-  is.loop = F,
-  n.sd = 2)
+write.xlsx(raw.loop3.outliers, paste0("output/checking/outliers/loop3_outlier_analysis_", n.sd, "sd.xlsx"), overwrite=T)
 
-raw.loop2.outliers <- detect.outliers(
-  df = raw.loop2,
-  id = 'loop_index',
-  colnames = cols.integer_raw.loop2,
-  is.loop = T,
-  n.sd = 2)
-
-
-raw.loop3.outliers <- detect.outliers(
-  df = raw.loop3,
-  id = 'loop_index',
-  colnames = cols.integer_raw.loop3,
-  is.loop = T,
-  n.sd = 2)
-
-
-all_outliers <- rbind(raw.main.outliers,raw.loop2.outliers,raw.loop3.outliers)
-
-write.xlsx(raw.main.outliers, paste0("output/checking/outliers/main_outlier_prices_analysis_", n.sd, "sd.xlsx"), overwrite=T)
-
-
-# Outliers Boxplot generator
-
-# Outliers Boxplot generator
-
-raw.main.df <- raw.main %>% 
-  select(uuid, cols.integer_raw.main) %>% 
-  mutate_at(cols.integer_raw.main, as.numeric) %>% 
-  pivot_longer(cols.integer_raw.main, names_to = 'variable', values_to = 'value') %>% 
-  filter(!is.na(value) & value>0) %>% 
-  mutate(value.log = log10(value)) %>% 
-  left_join(
-    raw.main.outliers %>% select(uuid,variable,old.value,issue) %>% 
-      rename(is.outlier=issue,
-             value = old.value)
-  ) %>% mutate(is.outlier = ifelse(is.na(is.outlier), 'Regular', is.outlier))
-
-raw.loop2.df <- raw.loop2 %>% 
-  select(uuid, loop_index , cols.integer_raw.loop2) %>% 
-  mutate_at(cols.integer_raw.loop2, as.numeric) %>% 
-  pivot_longer(cols.integer_raw.loop2, names_to = 'variable', values_to = 'value') %>% 
-  filter(!is.na(value) & value>0) %>% 
-  mutate(value.log = log10(value)) %>% 
-  left_join(
-    raw.loop2.outliers %>% select(loop_index,variable,old.value,issue) %>% 
-      rename(is.outlier=issue,
-             value = old.value)
-  ) %>% mutate(is.outlier = ifelse(is.na(is.outlier), 'Regular', is.outlier))
-
-raw.loop3.df <- raw.loop3 %>% 
-  select(uuid, loop_index , cols.integer_raw.loop3) %>% 
-  mutate_at(cols.integer_raw.loop3, as.numeric) %>% 
-  pivot_longer(cols.integer_raw.loop3, names_to = 'variable', values_to = 'value') %>% 
-  filter(!is.na(value) & value>0) %>% 
-  mutate(value.log = log10(value)) %>% 
-  left_join(
-    raw.loop3.outliers %>% select(loop_index,variable,old.value,issue) %>% 
-      rename(is.outlier=issue,
-             value = old.value)
-  ) %>% mutate(is.outlier = ifelse(is.na(is.outlier), 'Regular', is.outlier))
-
-df.all <- bind_rows(raw.main.df, raw.loop2.df, raw.loop3.df)
-
-# generating boxplots
-g.outliers_main <- ggplot(df.all) +
-  geom_boxplot(aes(x = variable, y = value), width = 0.2) + ylab("Values") +
-  geom_point(aes(x  =variable, y = value, colour =is.outlier)) +
-  facet_wrap(~variable, ncol = 4, scales = "free_y")+
-  theme(axis.text.x = element_blank(),
-        axis.ticks.x = element_blank()) +
-  scale_color_manual(values = c('red','black'))
-
-# Save
-ggsave(paste0("output/checking/outliers/main_outlier_prices_analysis_", n.sd, "sd.pdf"), g.outliers_main, 
-       width = 40, height = 80, units = "cm", device="pdf")
-
-
-cleaning.log.outliers <- rbind(cleaning.log.outliers,res.outliers_main)
-
-save.outlier.responses_msna(cleaning.log.outliers)  
-
+cleaning.log.outliers <- raw.main.outliers
+if (length(raw.loop1.outliers) != 0) {
+  cleaning.log.outliers <- rbind(cleaning.log.outliers, raw.loop1.outliers)
+}
+if (length(raw.loop2.outliers) != 0) {
+  cleaning.log.outliers <- rbind(cleaning.log.outliers, raw.loop2.outliers)
+}
+if (length(raw.loop2.outliers) != 0) {
+  cleaning.log.outliers <- rbind(cleaning.log.outliers, raw.loop3.outliers)
+}
 #------------------------------------------------------------------------------------------------------------
 # --> edit the file
 # --> Manually check outliers and change to NA (Decision made with country FPS)
@@ -249,19 +176,19 @@ save.outlier.responses_msna(cleaning.log.outliers)
 
 # RUN ONLY IF Anything need to be changed
 
-outlier.recode <- load.edited(dir.responses, "outliers")
-outlier.check <- load.edited(dir.requests, "outliers")
-
-if (nrow(outlier.check) != nrow(outlier.recode)) warning("Number of rows are not matching")
-
-cleaning.log.outliers <- outlier.recode %>%
-  select(uuid,loop_index,variable,issue,old.value,new.value) %>%
-  filter(is.na(new.value))
-
-raw.main <- raw.main %>% 
-  apply.changes(cleaning.log.outliers)
-
-cleaning.log <- rbind(cleaning.log,cleaning.log.outliers)
+# outlier.recode <- load.edited(dir.responses, "outliers")
+# outlier.check <- load.edited(dir.requests, "outliers")
+# 
+# if (nrow(outlier.check) != nrow(outlier.recode)) warning("Number of rows are not matching")
+# 
+# cleaning.log.outliers <- outlier.recode %>%
+#   select(uuid,loop_index,variable,issue,old.value,new.value) %>%
+#   filter(is.na(new.value))
+# 
+# raw.main <- raw.main %>% 
+#   apply.changes(cleaning.log.outliers)
+# 
+# cleaning.log <- rbind(cleaning.log,cleaning.log.outliers)
 
 
 #-------------------------------------------------------------------------------
@@ -297,9 +224,9 @@ raw.main  <- raw.main %>% select(-any_of(pii.to.remove_main))
 # remove from raw.
 
 if(length(ls)>1){
-ls_loops <- ls[2:length(ls)]
+  ls_loops <- ls[2:length(ls)]
 }else{ls_loops <- c()}
-  
+
 data.list <- ls()[grepl('^kobo.raw.loop[[:digit:]]$',ls())]
 
 txt <- paste0(
