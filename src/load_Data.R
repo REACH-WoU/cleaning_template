@@ -30,7 +30,7 @@ if(length(raw_data_filename) > 1) { stop("Found multiple files containing raw Ko
            parent_index = "_parent_index",
            submission_id = "_submission__id",
            submission_submission_time ="_submission__submission_time") %>% 
-    mutate(loop_index = paste0("loop',i,'_", loop_index))'
+    mutate(loop_index = paste0("loop',i-1,'_", loop_index))'
                     )
       eval(parse(text = txt))
     }

@@ -79,7 +79,7 @@ max_duration_interview <- 60 # maximum duration of an interview (screen time in 
 pre_process_audit_files <- F # whether cases of respondent taking too long to answer 1 question should cleaned.
 max_length_answer_1_question <- 20 # if pre_process_audit_files =T, enter the maximum time that 
 # the respondent can spend answering 1 question (in minutes) 
-min_num_diff_questions <- 12 # Used during the check for soft duplicates. 
+min_num_diff_questions <- 8 # Used during the check for soft duplicates. 
 # The minimum number of different columns that makes us confident that the entry is not a soft duplicate
 
 # run the checks
@@ -103,7 +103,11 @@ name_clean_trans_file <- '???'
 
 source('src/sections/section_4_apply_changes_to_requests.R')
 
+# Check if your data still has any cyrillic entries
 
+vars_to_omit <- c('uuid','loop_index') # add more names as needed
+
+source('src/sections/section_4_post_check_for_leftover_cyrillic.R')
 
 #--------------------------- Section  5 - Check for 999/99 entries----------------------------------------------------
 

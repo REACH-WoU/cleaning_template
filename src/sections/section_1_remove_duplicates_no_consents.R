@@ -11,51 +11,24 @@ if (length(ids)>0) {
   deletion.log.new <- data.frame()
 }
 
-# check for duplicates in loop1
-if(exists('raw.loop1')){
-  ids <- raw.loop1$loop_index[duplicated(raw.loop1$loop_index)]
+if(length(sheet_names_new)>0){
+  for(loop in sheet_names_new)
+  txt <- paste0(loop,'$loop_index[duplicated(',loop,'$loop_index)]')
+  ids <- eval(parse(text = txt))
+  
   if (length(ids)>0){
     warning("Duplicate uuids detected: ", length(ids))
+    txt <- paste0(loop,' %>% filter(loop_index %in% ids)')
+    dupl_df<- eval(parse(text = txt))
+    
     # add to deletion log
-    deletion.log.loop1 <- utilityR::create.deletion.log(raw.loop1 %>% 
-                                                        filter(loop_index %in% ids),directory_dictionary$enum_colname, "Duplicate",
-                                                      is.loop = T,
-                                                      data.main = raw.main) # a brand new deletion log
-    deletion.log.new <- bind_rows(deletion.log.new,deletion.log.loop1)
+    deletion.log.loop <- utilityR::create.deletion.log(dupl_df,
+                                                       directory_dictionary$enum_colname, "Duplicate",
+                                                       is.loop = T,
+                                                       data.main = raw.main) # a brand new deletion log
+    deletion.log.new <- bind_rows(deletion.log.new,deletion.log.loop)
   }
-}
-
-# check for duplicates in loop2
-if(exists('raw.loop2')){
-  ids <- raw.loop2$loop_index[duplicated(raw.loop2$loop_index)]
-  if (length(ids)>0){
-    warning("Duplicate uuids detected: ", length(ids))
-    # add to deletion log
-    deletion.log.loop2 <- utilityR::create.deletion.log(raw.loop2 %>% 
-                                                          filter(loop_index %in% ids),
-                                                        directory_dictionary$enum_colname, 
-                                                        "Duplicate",
-                                                        is.loop = T,
-                                                        data.main = raw.main) # a brand new deletion log
-    deletion.log.new <- bind_rows(deletion.log.new,deletion.log.loop2)
-  }
-}
-
-
-# check for duplicates in loop3
-if(exists('raw.loop3')){
-  ids <- raw.loop3$loop_index[duplicated(raw.loop3$loop_index)]
-  if (length(ids)>0){
-    warning("Duplicate uuids detected: ", length(ids))
-    # add to deletion log
-    deletion.log.loop3 <- utilityR::create.deletion.log(raw.loop3 %>% 
-                                                          filter(loop_index %in% ids),
-                                                        directory_dictionary$enum_colname, 
-                                                        "Duplicate",
-                                                        is.loop = T,
-                                                        data.main = raw.main) # a brand new deletion log
-    deletion.log.new <- bind_rows(deletion.log.new,deletion.log.loop3)
-  }
+  
 }
 
 rm(ids)
@@ -113,15 +86,13 @@ deletion.log.new <- rbind(deletion.log.new, deletion.log.test_submission,deletio
 ####################################################
 ## run this to remove duplicates and no-consents  ##
 raw.main  <- raw.main[!(raw.main$uuid %in% deletion.log.new$uuid),]
-if(exists('raw.loop1')){
-  raw.loop1 <- raw.loop1[!(raw.loop1$uuid %in% deletion.log.new$uuid),]
+
+if(length(sheet_names_new)>0){
+  for(loop in sheet_names_new){
+    txt <- paste0(loop,'<-',loop,'[!(',loop,'$uuid %in% deletion.log.new$uuid),]')
+    eval(parse(text=txt))
 }
-if(exists('raw.loop2')){
-  raw.loop2 <- raw.loop2[!(raw.loop2$uuid %in% deletion.log.new$uuid),]
 }
-if(exists('raw.loop3')){
-  raw.loop3 <- raw.loop3[!(raw.loop3$uuid %in% deletion.log.new$uuid),]
-  }
 ####################################################
 
 rm(test_submission, deletion.log.test_submission,deletion.log.no_consents)

@@ -18,8 +18,9 @@ logbook <- cleaning.log %>%
 
 
 del_log <- deletion.log.new %>% 
-  left_join(kobo.raw.main %>% select(uuid,deviceid,all_of(directory_dictionary$enum_colname) )) %>% 
-  distinct() %>% 
+  left_join(kobo.raw.main %>% 
+              select(uuid,deviceid,all_of(directory_dictionary$enum_colname)) %>% 
+              distinct()) %>% 
   select(uuid,all_of(directory_dictionary$enum_colname),deviceid,reason) %>% 
   mutate(type_of_issue = NA,
          feedback = 'deleted')

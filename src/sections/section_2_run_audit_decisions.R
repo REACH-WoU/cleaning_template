@@ -30,15 +30,11 @@ deletion.log.new <- bind_rows(deletion.log.new, deletion.log.audits)
 ##   removing fast submissions and duplicates  ##
 ## run this to remove duplicates and no-consents  ##
 raw.main  <- raw.main[!(raw.main$uuid %in% deletion.log.audits$uuid),]
-if(exists('raw.loop1')){
-  raw.loop1 <- raw.loop1[!(raw.loop1$uuid %in% deletion.log.audits$uuid),]
-}
-if(exists('raw.loop2')){
-  raw.loop2 <- raw.loop2[!(raw.loop2$uuid %in% deletion.log.audits$uuid),]
-}
-if(exists('raw.loop3')){
-  raw.loop3 <- raw.loop3[!(raw.loop3$uuid %in% deletion.log.audits$uuid),]
-}
-#################################################
+if(length(sheet_names_new)>0){
+  for(loop in sheet_names_new){
+    txt <- paste0(loop,'<-',loop,'[!(',loop,'$uuid %in% deletion.log.new$uuid),]')
+    eval(parse(text=txt))
+  }
+}#################################################
 
 rm(ids, deletion.log.too.fast, deletion.log.softduplicates)
