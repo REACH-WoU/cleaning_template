@@ -1,5 +1,5 @@
 
-cl_log_999 <- data.frame()
+cl_log_999 <- tibble()
 
 # get the integers from main
 int_cols_main  <- tool.survey %>% 
@@ -35,5 +35,6 @@ if(exists('raw.loop3')){
   cl_log_999_loop3 <- utilityR::recode.set.NA.if(raw.loop3,int_cols_loop3, code = 'code_for_check',issue = 'Wrong entry')
   cl_log_999 <- bind_rows(cl_log_999,cl_log_999_loop3)
 }
-
-cleaning.log <- bind_rows(cleaning.log, cl_log_999)
+if(nrow(cl_log_999)>0){
+  cleaning.log <- bind_rows(cleaning.log, cl_log_999)
+}

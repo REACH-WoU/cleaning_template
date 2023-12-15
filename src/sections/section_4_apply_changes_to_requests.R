@@ -1,3 +1,4 @@
+cleaning.log <- data.frame()
 or.edited  <- utilityR::load.requests(directory_dictionary$dir.requests, 
                                       name_clean_others_file,
                                       sheet = "Sheet2", validate = T)  # specify Sheet2 because the first one is a readme
@@ -20,14 +21,23 @@ raw.main_requests <- or.edited %>%
 if(exists('raw.loop1')){
   raw.loop1_requests <- or.edited %>% 
     filter(name %in% names(raw.loop1))
+  if(nrow(raw.loop1_requests)==0){
+    rm(raw.loop1_requests)
+  }
 }
 if(exists('raw.loop2')){
-raw.loop2_requests <- or.edited %>% 
-  filter(name %in% names(raw.loop2))
+  raw.loop2_requests <- or.edited %>% 
+    filter(name %in% names(raw.loop2))
+  if(nrow(raw.loop2_requests)==0){
+    rm(raw.loop2_requests)
+  }
 }
 if(exists('raw.loop3')){
-raw.loop3_requests <- or.edited %>% 
-  filter(name %in% names(raw.loop3))
+  raw.loop3_requests <- or.edited %>% 
+    filter(name %in% names(raw.loop3))
+  if(nrow(raw.loop3_requests)==0){
+    rm(raw.loop3_requests)
+  }
 }
 
 
@@ -40,6 +50,9 @@ if(!(nrow(raw.main_requests)+nrow(raw.loop1_requests)+nrow(raw.loop2_requests)+n
   print('Variables that may be causing this issue:')
   print(setdiff(or.edited$name,all_names))
 }
+
+# If you face any weird double spaces
+#tool.choices$`label::English`=str_squish(tool.choices$`label::English`)
 
 # Create a cleaning log file for each loop if there's a need for it.
 cleaning.log.other.main <- utilityR::recode.others(data = raw.main,
@@ -59,20 +72,20 @@ if(exists('raw.loop1_requests')){
 }else{cleaning.log.other.loop1 <- data.frame()}
 
 if(exists('raw.loop2_requests')){
-cleaning.log.other.loop2 <- utilityR::recode.others(data = raw.loop2,
-                                                    or.edited = raw.loop2_requests,
-                                                    orig_response_col = 'responses',
-                                                    is.loop = T,
-                                                    tool.choices = tool.choices,
-                                                    tool.survey = tool.survey)
+  cleaning.log.other.loop2 <- utilityR::recode.others(data = raw.loop2,
+                                                      or.edited = raw.loop2_requests,
+                                                      orig_response_col = 'responses',
+                                                      is.loop = T,
+                                                      tool.choices = tool.choices,
+                                                      tool.survey = tool.survey)
 }else{cleaning.log.other.loop2 <- data.frame()}
 if(exists('raw.loop3_requests')){
-cleaning.log.other.loop3 <- utilityR::recode.others(data = raw.loop3,
-                                                    or.edited = raw.loop3_requests,
-                                                    orig_response_col = 'responses',
-                                                    is.loop = T,
-                                                    tool.choices = tool.choices,
-                                                    tool.survey = tool.survey)
+  cleaning.log.other.loop3 <- utilityR::recode.others(data = raw.loop3,
+                                                      or.edited = raw.loop3_requests,
+                                                      orig_response_col = 'responses',
+                                                      is.loop = T,
+                                                      tool.choices = tool.choices,
+                                                      tool.survey = tool.survey)
 }else{cleaning.log.other.loop3 <- data.frame()}
 
 

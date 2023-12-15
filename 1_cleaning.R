@@ -7,7 +7,8 @@ directory_dictionary <- list(
   dir.audits.check = "output/checking/audit/",# The directory to your audit summary files (you'll be checking these)
   dir.requests = "output/checking/requests/", # the directory of your other_requests file 
   dir.responses = "output/checking/responses/", # the directory of your responses to open questions
-  enum_colname = "enumerator_id", # the column that contains the enumerator ID
+  enum_colname = "enumerator_id", # the column that contains the enumerator ID,
+  enum_comments = 'enum_comms', # the column that contains the enumerator's comments,
   filename.tool = "resources/Reach_UKR2306_CCCM_DS_tool_r2_v3 1.xlsx", # the name of your Kobo tool and its path
   data_name = "Reach_UKR2306_CCCM_DS_tool_r2_-_all_versions_-_False_-_2023-11-25-09-58-22 (1).xlsx", # the name of your dataframe
   data_path = "data/inputs/kobo_export/", # the path to your dataframe
@@ -34,45 +35,26 @@ cat(paste0("Section below only for research cycles that requires cleaning on reg
 # Run if you have any old files that need to be loaded and removed from the final dataframe
 source('src/sections/process_old_data.R')
 
+
+# final preparation
 # Rename your dataframes
+
 raw.main <- kobo.raw.main
-if(exists('raw.loop1')){
-  raw.loop1 <- kobo.raw.loop1
+
+sheet_names <- sheet_names[sheet_names!='kobo.raw.main']
+sheet_names_new <- gsub('kobo.','',sheet_names)
+
+if(length(sheet_names_new)>0){
+  for(i in 1:length(sheet_names_new)){
+    txt <- paste0(sheet_names_new[i],' <- ',sheet_names[i])
+    eval(parse(text=txt))
+  }
 }
-if(exists('raw.loop2')){
-  raw.loop2 <- kobo.raw.loop2
-}
-if(exists('raw.loop3')){
-  raw.loop3 <- kobo.raw.loop3
-}
-## Add more loops if needed. 
+
 
 # If there were any changes in the tool during data collection, they can be run here
 source('src/sections/tool_modification.R')
 
-# remove underscores
-raw.main <- raw.main %>% 
-  rename(submission_time = "_submission_time") %>% 
-  rename(index = "_index") %>% 
-  rename_all(~sub("_geolocation","geolocation", .x)) 
-
-if(exists('raw.loop1')){
-raw.loop1 <- raw.loop1 %>% 
-  rename(submission_id = "_submission__id",
-         submission_submission_time ='_submission__submission_time')
-}
-
-if(exists('raw.loop2')){
-  raw.loop2 <- raw.loop2 %>% 
-    rename(submission_id = "_submission__id",
-           submission_submission_time ='_submission__submission_time')
-}
-
-if(exists('raw.loop3')){
-  raw.loop3 <- raw.loop3 %>% 
-    rename(submission_id = "_submission__id",
-           submission_submission_time ='_submission__submission_time')
-}
 
 # select the columns in your data that contain date elements
 date_cols_main <- c("start","end", tool.survey %>% filter(type == "date" & datasheet == "main") %>% pull(name),
@@ -115,7 +97,7 @@ source('src/sections/section_3_loops_and_spatial_checks.R')
 
 source('src/sections/section_4_create_other_requests_files.R')
 
-name_clean_others_file <- '???'
+name_clean_others_file <- 'DS_r2_other_requests_final_2023_12_04'
 name_clean_trans_file <- '???'
 
 
@@ -124,8 +106,6 @@ source('src/sections/section_4_apply_changes_to_requests.R')
 
 
 #--------------------------- Section  5 - Check for 999/99 entries----------------------------------------------------
-
-cleaning.log.checks.direct <- tibble()
 
 # Check if any columns are equal to '999'
 
@@ -136,6 +116,7 @@ source('src/sections/section_5_create_999_checks.R')
 
 # ----------------------------------Section 6 - Your logic checks go here--------------------------------
 
+cleaning.log.checks.direct <- tibble()
 
 
 
@@ -285,60 +266,58 @@ cleaning.log <- rbind(cleaning.log,cleaning.log.outliers)
 
 # finalize cleaning log:
 cleaning.log <- cleaning.log %>% distinct() %>% 
-  filter(old.value %!=na% new.value) %>% left_join(raw.main %>% select(uuid, any_of(enum_colname)))
+  filter(old.value %!=na% new.value) %>% left_join(raw.main %>% select(uuid, any_of(directory_dictionary$enum_colname)))
 
 if (length(list.files(make.filename.xlsx("output/cleaning_log", "cleaning_log", no_date = T))) > 0) {
   cleaning.log.previous <- read_xlsx(make.filename.xlsx("output/cleaning_log", "cleaning_log"))
   cleaning.log.whole <- rbind(cleaning.log.previous, cleaning.log)
-} else cleaning.log.whole <- cleaning.log
-
+} else {
+  cleaning.log.whole <- cleaning.log
+}
 # Output Cleaning Log
-write.xlsx(cleaning.log, make.filename.xlsx("output/cleaning_log", "cleaning_log", no_date = T), overwrite = T)
+write.xlsx(cleaning.log.whole, make.filename.xlsx("output/cleaning_log", "cleaning_log", no_date = T), overwrite = T)
 
 
 # combine new and previous data:
 # ------------------------------------------------------------------------------
 
-if(!"main.data.previous" %in% ls()) {
-  warning("main.data.previous was not found! Are you sure you don't have a previous data_log that you can load?")
-  new.main <- raw.main
-  # new.loop1 <- raw.loop1
-  # new.loop2 <- raw.loop2
-}else{
-  # check if there are any columns somehow added during this cleaning process
-  for(cc in colnames(raw.main)){
-    if(!(cc %in% colnames(main.data.previous))){
-      warning(paste("column",cc,"found in raw.main but not in main.data.previous!"))
-    }}
-  # and the other way around:
-  for(cc in colnames(main.data.previous)){
-    if(!(cc %in% colnames(raw.main))){
-      warning(paste("column",cc,"found in main.data.previous but not in raw.main!"))
-    }}
-  
-  new.main  <- bind_rows(main.data.previous, raw.main) %>% filter(!uuid %in% deletion.log.whole$uuid)
-  # new.loop1 <- bind_rows(loop1.previous, raw.loop1) %>% filter(!uuid %in% deletion.log.whole$uuid)
-  # new.loop2 <- bind_rows(loop2.previous, raw.loop2) %>% filter(!uuid %in% deletion.log.whole$uuid)
-}
 pii.to.remove_main <- c(
   "deviceid",
   "staff_other",
   "audit",
   "audit_URL",
   "username")
-new.main.removed  <- new.main %>% select(-any_of(pii.to.remove_main))
 
-# All data write excel
-datasheets <- list("main" = new.main,
-               "hh_compos" = new.loop1  #, "incidents_what" = new.loop2
-               )
+raw.main  <- raw.main %>% select(-any_of(pii.to.remove_main))
+
+# remove from raw.
+
+if(length(ls)>1){
+ls_loops <- ls[2:length(ls)]
+}else{ls_loops <- c()}
+  
+data.list <- ls()[grepl('^kobo.raw.loop[[:digit:]]$',ls())]
+
+txt <- paste0(
+  'datasheets <-list("main" =kobo.raw.main,',
+  paste0('"',ls_loops,'" = ',data.list, collapse = ','),')'
+)
+eval(parse(text= txt))
+
 write.xlsx(datasheets, make.filename.xlsx("output/data_log", "full_data"), overwrite = T,
            zoom = 90, firstRow = T)
 
+
 # final (pii removed)
-datasheets_anon <- list("main" = new.main.removed,
-                        "hh_compos" = new.loop1   #,  "incidents_what" = new.loop2
-                        )
+
+data.list <- ls()[grepl('^raw.loop[[:digit:]]$',ls())]
+
+txt <- paste0(
+  'datasheets_anon <-list("main" =raw.main,',
+  paste0('"',ls_loops,'" = ',data.list, collapse = ','),')'
+)
+eval(parse(text= txt))
+
 write.xlsx(datasheets_anon, make.filename.xlsx("output/final", "final_anonymized_data"), overwrite = T,
            zoom = 90, firstRow = T)
 

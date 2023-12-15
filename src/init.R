@@ -36,4 +36,5 @@ cat("\nLoading Kobo tool from file", directory_dictionary$filename.tool, "...\n"
 label_colname <- utilityR::load.label.colname(directory_dictionary$filename.tool)
 tool.survey  <- utilityR::load.tool.survey(directory_dictionary$filename.tool, label_colname = directory_dictionary$label_colname)
 tool.choices <- utilityR::load.tool.choices(directory_dictionary$filename.tool, label_colname = directory_dictionary$label_colname)
+
 cat("..OK\n")
