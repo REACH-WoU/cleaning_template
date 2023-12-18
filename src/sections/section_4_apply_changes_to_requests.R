@@ -3,7 +3,7 @@ cleaning.log <- data.frame()
 if(name_clean_others_file != ''){
   or.edited  <- utilityR::load.requests(directory_dictionary$dir.requests, 
                                         name_clean_others_file,
-                                        sheet = "Sheet2", validate = T)  # specify Sheet2 because the first one is a readme
+                                        sheet = sheet_name_others, validate = T)  # specify Sheet2 because the first one is a readme
   
   
   if(any(or.edited$check == 1)){
@@ -11,9 +11,10 @@ if(name_clean_others_file != ''){
     stop(paste0('Some of your entries have errors, please double-check: ', paste0(issue,collapse = '\n')))
   }
   
-  # this is for the test purposes. You won't have to run it when you've worked through everything
-  or.edited <- or.edited %>% 
-    filter(!(is.na(true.v)&is.na(existing.v) & is.na(invalid.v)))
+  if(any(or.edited$check == 3)){
+    issue <- paste0('uuid: ', or.edited[or.edited$check == 3,]$uuid,', variable: ',or.edited[or.edited$check == 3,]$name)
+    stop(paste0('Some of your entries are empty, please double-check: ', paste0(issue,collapse = '\n')))
+  }
   
   # run the bits below
   
@@ -42,16 +43,6 @@ if(name_clean_others_file != ''){
     }
   }
   
-  
-  if(!(nrow(raw.main_requests)+nrow(raw.loop1_requests)+nrow(raw.loop2_requests)+nrow(raw.loop3_requests)==nrow(or.edited))){
-    warning('The number of rows in each of the separated dataframes does not match the number of total rows. This may mean
-          that some of the variables in your edited file are not present in the dataframes')
-    all_names <- unique(c(
-      names(raw.main),names(raw.loop1),names(raw.loop2),names(raw.loop3)
-    ))
-    print('Variables that may be causing this issue:')
-    print(setdiff(or.edited$name,all_names))
-  }
   
   # If you face any weird double spaces
   #tool.choices$`label::English`=str_squish(tool.choices$`label::English`)
@@ -111,13 +102,14 @@ if(name_clean_others_file != ''){
   )
   # bind it with the main cleaning log
   cleaning.log <- bind_rows(cleaning.log, cleaning.log.other)
+  cleaning.log <- cleaning.log %>% select(-uniqui)
 }
 
 ### Add translation cleaning if needed. ------------------------------ 
 
 if(name_clean_trans_file!= ''){
   
-  trans <-  utilityR::load.requests(directory_dictionary$dir.requests, name_clean_trans_file, validate = T)
+  trans <-  utilityR::load.requests(directory_dictionary$dir.requests, name_clean_trans_file, validate = F)
   
   # run the bits below
   cleaning.log.trans <- utilityR::recode.trans.requests(trans, response_col = 'responses')
@@ -142,14 +134,21 @@ if(name_clean_trans_file!= ''){
   # apply changes to the frame
   raw.main <- utilityR::apply.changes(raw.main,clog = raw.main_trans,is.loop = F)
   if(exists('raw.loop1_trans')){
-    raw.loop1 <- utilityR::apply.changes(raw.loop1,clog = raw.loop1_trans,is.loop = T)
+    if(nrow(raw.loop1_trans)>0){
+      raw.loop1 <- utilityR::apply.changes(raw.loop1,clog = raw.loop1_trans,is.loop = T)
+      
+    }
   }
   if(exists('raw.loop2_trans')){
-    raw.loop2 <- utilityR::apply.changes(raw.loop2,clog = raw.loop2_trans,is.loop = T)
+    if(nrow(raw.loop2_trans)>0){
+      raw.loop2 <- utilityR::apply.changes(raw.loop2,clog = raw.loop2_trans,is.loop = T)
+    }
   }
   if(exists('raw.loop3_trans')){
-    raw.loop3 <- utilityR::apply.changes(raw.loop3,clog = raw.loop3_trans,is.loop = T)
+    if(nrow(raw.loop3_trans)>0){
+      raw.loop3 <- utilityR::apply.changes(raw.loop3,clog = raw.loop3_trans,is.loop = T)
+    }
   }
-  
   cleaning.log <- bind_rows(cleaning.log, cleaning.log.trans)
+  
 }
