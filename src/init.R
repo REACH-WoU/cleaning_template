@@ -6,7 +6,7 @@ if (!require("pacman")) install.packages("pacman")
 devtools::install_github('Nestor-Ch/utilityR')
 
 pacman::p_load(docstring, tidyverse, readxl, writexl, openxlsx, stringr, 
-               sf, geosphere, qdapRegex, cluster, randomcoloR, svDialogs, scales, janitor, utilityR)
+               sf, geosphere, qdapRegex, cluster, randomcoloR, svDialogs, scales, janitor, utilityR,zip)
 
 
 make.short.name <- function(name, no_date = F){
