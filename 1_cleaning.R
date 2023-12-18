@@ -76,7 +76,6 @@ source('src/sections/section_1_remove_duplicates_no_consents.R')
 min_duration_interview <- 5 # minimum duration of an interview (screen time in minutes)
 max_duration_interview <- 60 # maximum duration of an interview (screen time in minutes)
 pre_process_audit_files <- F # whether cases of respondent taking too long to answer 1 question should cleaned.
-
 # if pre_process_audit_files =T, enter the maximum time that  the respondent can spend answering 1 question (in minutes) 
 max_length_answer_1_question <- 20 
 # Used during the check for soft duplicates. 
@@ -94,6 +93,8 @@ source('src/sections/section_2_run_audit_decisions.R')
 # --------------------------------Section  3  - Loop inconsitencies + spatial checks -----------------------------------
 
 source('src/sections/section_3_loops_and_spatial_checks.R')
+
+write.xlsx(deletion.log.new, make.filename.xlsx("output/deletion_log/", "deletion_log", no_date = T), overwrite=T)
 
 #--------------------------- Section  4 - Others and translations----------------------------------------------------
 
