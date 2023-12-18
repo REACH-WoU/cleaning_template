@@ -6,7 +6,7 @@ int_cols_main  <- tool.survey %>%
   filter(type == "integer" & datasheet == "main") %>% 
   pull(name)
 # recode if any
-cl_log_999_main <- utilityR::recode.set.NA.if(raw.main,int_cols_main, code = 'code_for_check',issue = 'Wrong entry')
+cl_log_999_main <- utilityR::recode.set.NA.if(raw.main,int_cols_main, code = code_for_check,issue = 'Wrong entry')
 #bind the logs
 cl_log_999 <- bind_rows(cl_log_999,cl_log_999_main)
 

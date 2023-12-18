@@ -77,15 +77,17 @@ source('src/sections/section_1_remove_duplicates_no_consents.R')
 min_duration_interview <- 5 # minimum duration of an interview (screen time in minutes)
 max_duration_interview <- 60 # maximum duration of an interview (screen time in minutes)
 pre_process_audit_files <- F # whether cases of respondent taking too long to answer 1 question should cleaned.
-max_length_answer_1_question <- 20 # if pre_process_audit_files =T, enter the maximum time that 
-# the respondent can spend answering 1 question (in minutes) 
-min_num_diff_questions <- 8 # Used during the check for soft duplicates. 
+
+# if pre_process_audit_files =T, enter the maximum time that  the respondent can spend answering 1 question (in minutes) 
+max_length_answer_1_question <- 20 
+# Used during the check for soft duplicates. 
 # The minimum number of different columns that makes us confident that the entry is not a soft duplicate
+min_num_diff_questions <- 8
 
 # run the checks
 source('src/sections/section_2_run_audit_checks.R')
 
-# once you've checked everything - implement the decisions below
+# once you've checked all entries in the "output/checking/audit/" directory and only left what's needed - implement the decisions below
 
 source('src/sections/section_2_run_audit_decisions.R')
 
@@ -97,23 +99,26 @@ source('src/sections/section_3_loops_and_spatial_checks.R')
 
 source('src/sections/section_4_create_other_requests_files.R')
 
+# name that hosts the clean recode.others file, leave as '' if you don't have this file. Nothing will be recoded that way
 name_clean_others_file <- 'DS_r2_other_requests_final_2023_12_04'
-name_clean_trans_file <- '???'
+# name that hosts the clean translation requests file, leave as '' if you don't have this file. Nothing will be recoded that way
+name_clean_trans_file <- ''
 
 
 source('src/sections/section_4_apply_changes_to_requests.R')
 
 # Check if your data still has any cyrillic entries
 
-vars_to_omit <- c('uuid','loop_index') # add more names as needed
+# variables that will be omitted from the analysis
+vars_to_omit <- c('settlement') # add more names as needed
 
 source('src/sections/section_4_post_check_for_leftover_cyrillic.R')
 
 #--------------------------- Section  5 - Check for 999/99 entries----------------------------------------------------
 
-# Check if any columns are equal to '999'
+# Check if any columns are equal to '999'/'99', enter any other variables you're suspicious of
 
-code_for_check  <- '99'
+code_for_check  <- c('99','999')
 
 source('src/sections/section_5_create_999_checks.R')
 
@@ -150,24 +155,9 @@ cols.integer_raw.loop3 <- c()
 
 source('src/sections/section_6_detect_and_visualise_outliers.R')
 
-write.xlsx(raw.main.outliers, paste0("output/checking/outliers/main_outlier_analysis_", n.sd, "sd.xlsx"), overwrite=T)
+write.xlsx(cleaning.log.outliers, paste0("output/checking/outliers/outlier_analysis_", n.sd, "sd.xlsx"), overwrite=T)
 
-write.xlsx(raw.loop1.outliers, paste0("output/checking/outliers/loop1_outlier_analysis_", n.sd, "sd.xlsx"), overwrite=T)
 
-write.xlsx(raw.loop2.outliers, paste0("output/checking/outliers/loop2_outlier_analysis_", n.sd, "sd.xlsx"), overwrite=T)
-
-write.xlsx(raw.loop3.outliers, paste0("output/checking/outliers/loop3_outlier_analysis_", n.sd, "sd.xlsx"), overwrite=T)
-
-cleaning.log.outliers <- raw.main.outliers
-if (length(raw.loop1.outliers) != 0) {
-  cleaning.log.outliers <- rbind(cleaning.log.outliers, raw.loop1.outliers)
-}
-if (length(raw.loop2.outliers) != 0) {
-  cleaning.log.outliers <- rbind(cleaning.log.outliers, raw.loop2.outliers)
-}
-if (length(raw.loop2.outliers) != 0) {
-  cleaning.log.outliers <- rbind(cleaning.log.outliers, raw.loop3.outliers)
-}
 #------------------------------------------------------------------------------------------------------------
 # --> edit the file
 # --> Manually check outliers and change to NA (Decision made with country FPS)
