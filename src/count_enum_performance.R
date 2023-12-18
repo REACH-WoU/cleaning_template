@@ -1,15 +1,40 @@
-source("src/init.R")
+source("src/load_Data.R")
 
-filename.dataset <- "data/inputs/kobo_export/ROM_PP2_rawdata.xlsx"
 
-kobo.raw <- read_excel(filename.dataset, col_types = "text") %>%
-  rename(uuid ="_uuid", index = "_index")
+deleted_colums <- data.frame(variable=setdiff(names(kobo.raw.main),names(raw.main)),
+                             action = 'removed',
+                             rationale = NA
+)
 
-deletion.log <- read_excel(paste0("output/deletion_log/ROM_PP2_deletion_log.xlsx"), col_types = "text")
-cleaning.log <- read_excel(paste0("output/cleaning_log/ROM_PP2_cleaning_log.xlsx"), col_types = "text")
+data_extract <- raw.main[,c('uuid', directory_dictionary$enum_colname)]
 
-create.count_collected_enu(kobo.raw,     "enumerator_num")
-create.count_deleted_enu(deletion.log, "enumerator_num")
-create.count_enu_cleaning(cleaning.log, "enumerator_num")
+logbook <- cleaning.log %>% 
+  left_join(kobo.raw.main %>% select(uuid,deviceid )) %>% 
+  mutate(type_of_issue = NA,
+         changed = 'Yes',
+         feedback=NA) %>% 
+  select(uuid, enumerator_id,deviceid,variable,issue, type_of_issue,feedback,changed,old.value, new.value) %>% 
+  tibble()
 
-cat("\n> Done. Created 3 files in output/enum_performance.")
+
+del_log <- deletion.log.new %>% 
+  left_join(kobo.raw.main %>% 
+              select(uuid,deviceid,all_of(directory_dictionary$enum_colname)) %>% 
+              distinct()) %>% 
+  select(uuid,all_of(directory_dictionary$enum_colname),deviceid,reason) %>% 
+  mutate(type_of_issue = NA,
+         feedback = 'deleted')
+  
+
+submission_file <- list(
+  'variable_tracker' =deleted_colums,
+  'data_extract'=data_extract,
+  'logbook' = logbook,
+  'del_log'=del_log
+)
+
+write.xlsx(submission_file, make.filename.xlsx("output/enum_performance.", "Enumerator_performance_temp"), overwrite = T,
+           zoom = 90, firstRow = T)
+
+
+cat("\n> Done. Created 1 file in output/enum_performance.")
