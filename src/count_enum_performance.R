@@ -33,7 +33,7 @@ submission_file <- list(
   'del_log'=del_log
 )
 
-write.xlsx(submission_file, make.filename.xlsx("output/enum_performance.", "Enumerator_performance_temp"), overwrite = T,
+write.xlsx(submission_file, make.filename.xlsx("output/enum_performance", "Enumerator_performance_temp"), overwrite = T,
            zoom = 90, firstRow = T)
 
 
