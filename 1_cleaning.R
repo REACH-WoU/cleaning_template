@@ -9,7 +9,7 @@ directory_dictionary <- list(
   dir.responses = "output/checking/responses/", # the directory of your responses to open questions
   enum_colname = "enumerator_id", # the column that contains the enumerator ID,
   enum_comments = 'enum_comms', # the column that contains the enumerator's comments,
-  filename.tool = "resources/Reach_UKR2306_CCCM_DS_tool_r2_v3 1.xlsx", # the name of your Kobo tool and its path
+  filename.tool = "resources/Reach_UKR2306_CCCM_DS_tool_r2_v3.xlsx", # the name of your Kobo tool and its path
   data_name = "Reach_UKR2306_CCCM_DS_tool_r2_-_all_versions_-_False_-_2023-11-25-09-58-22 (1).xlsx", # the name of your dataframe
   data_path = "data/inputs/kobo_export/", # the path to your dataframe
   label_colname = 'label::English', # the name of your label column. Has to be identical in Kobo survey and choices sheets
@@ -28,7 +28,6 @@ source("src/load_Data.R")
 
 ## Section below only for research cycles that requires cleaning on regular basis and use one kobo server. 
 cat(paste0("Section below only for research cycles that requires cleaning on regular basis and use one kobo server."))
-
 
 # --------------------------------Section  0  - Data pre-processing -----------------------------------
 
@@ -87,7 +86,8 @@ min_num_diff_questions <- 8
 # run the checks
 source('src/sections/section_2_run_audit_checks.R')
 
-# once you've checked all entries in the "output/checking/audit/" directory and only left what's needed - implement the decisions below
+# once you've checked all entries in the "output/checking/audit/" directory and only left what needs to be deleted
+# implement the decisions below
 
 source('src/sections/section_2_run_audit_decisions.R')
 
@@ -100,9 +100,10 @@ source('src/sections/section_3_loops_and_spatial_checks.R')
 source('src/sections/section_4_create_other_requests_files.R')
 
 # name that hosts the clean recode.others file, leave as '' if you don't have this file. Nothing will be recoded that way
-name_clean_others_file <- 'DS_r2_other_requests_final_2023_12_04'
+name_clean_others_file <- 'DS_r2_other_requests_script_2023_01_01'
+sheet_name_others <- 'Sheet1' # name of the sheet where you're holding your requests 
 # name that hosts the clean translation requests file, leave as '' if you don't have this file. Nothing will be recoded that way
-name_clean_trans_file <- ''
+name_clean_trans_file <- 'DS_r2_text_requests_script_2023_01_01' 
 
 
 source('src/sections/section_4_apply_changes_to_requests.R')
@@ -116,17 +117,20 @@ source('src/sections/section_4_post_check_for_leftover_cyrillic.R')
 
 #--------------------------- Section  5 - Check for 999/99 entries----------------------------------------------------
 
-# Check if any columns are equal to '999'/'99', enter any other variables you're suspicious of
+# Check if any columns are equal to '999'/'99', enter any other values you're suspicious of
 
 code_for_check  <- c('99','999')
 
 source('src/sections/section_5_create_999_checks.R')
 
+print(cl_log_999)
+# if Anything got into cl_log_999, check it. If you want to delete it from your data run the command below
+source('src/sections/section_5_finish_999_checks.R')
+
 
 # ----------------------------------Section 6 - Your logic checks go here--------------------------------
 
 cleaning.log.checks.direct <- tibble()
-
 
 
 # ------------------------------------------------------------------------------
@@ -166,19 +170,11 @@ write.xlsx(cleaning.log.outliers, paste0("output/checking/outliers/outlier_analy
 
 # RUN ONLY IF Anything need to be changed
 
-# outlier.recode <- load.edited(dir.responses, "outliers")
-# outlier.check <- load.edited(dir.requests, "outliers")
-# 
-# if (nrow(outlier.check) != nrow(outlier.recode)) warning("Number of rows are not matching")
-# 
-# cleaning.log.outliers <- outlier.recode %>%
-#   select(uuid,loop_index,variable,issue,old.value,new.value) %>%
-#   filter(is.na(new.value))
-# 
-# raw.main <- raw.main %>% 
-#   apply.changes(cleaning.log.outliers)
-# 
-# cleaning.log <- rbind(cleaning.log,cleaning.log.outliers)
+cleaning.log.outliers <- read.xlsx(paste0("output/checking/outliers/outlier_analysis_", n.sd, "sd.xlsx"))
+
+source('src/sections/section_6_finish_outlier_check.R')
+
+cleaning.log <- rbind(cleaning.log,cleaning.log.outliers)
 
 
 #-------------------------------------------------------------------------------
@@ -217,12 +213,14 @@ if(length(ls)>1){
   ls_loops <- ls[2:length(ls)]
 }else{ls_loops <- c()}
 
-data.list <- ls()[grepl('^kobo.raw.loop[[:digit:]]$',ls())]
-
+if(length(ls)>1){
 txt <- paste0(
   'datasheets <-list("main" =kobo.raw.main,',
-  paste0('"',ls_loops,'" = ',data.list, collapse = ','),')'
+  paste0('"',ls_loops,'" = ',sheet_names, collapse = ','),')'
 )
+}else{
+  txt <- 'datasheets <-list("main" =kobo.raw.main)'
+}
 eval(parse(text= txt))
 
 write.xlsx(datasheets, make.filename.xlsx("output/data_log", "full_data"), overwrite = T,
