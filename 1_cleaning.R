@@ -229,12 +229,13 @@ write.xlsx(datasheets, make.filename.xlsx("output/data_log", "full_data"), overw
 
 # final (pii removed)
 
-data.list <- ls()[grepl('^raw.loop[[:digit:]]$',ls())]
-
+if(length(ls)>1){
 txt <- paste0(
   'datasheets_anon <-list("main" =raw.main,',
-  paste0('"',ls_loops,'" = ',data.list, collapse = ','),')'
-)
+  paste0('"',ls_loops,'" = ',sheet_names_new, collapse = ','),')'
+)}else{
+  txt <- 'datasheets <-list("main" =raw.main)'
+}
 eval(parse(text= txt))
 
 write.xlsx(datasheets_anon, make.filename.xlsx("output/final", "final_anonymized_data"), overwrite = T,
