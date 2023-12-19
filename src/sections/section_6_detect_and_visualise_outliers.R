@@ -2,9 +2,9 @@ cleaning.log.outliers <- data.frame()
 
 cols.integer_main <- filter(tool.survey, type == "integer")
 if (length(cols.integer_raw.main) == 0) cols.integer_raw.main <- cols.integer_main[cols.integer_main$name %in% colnames(raw.main),] %>% pull(name)
-if (length(cols.integer_raw.loop1) == 0) cols.integer_raw.loop1 <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop1),] %>% pull(name)
-if (length(cols.integer_raw.loop2) == 0) cols.integer_raw.loop2 <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop2),] %>% pull(name)
-if (length(cols.integer_raw.loop3) == 0) cols.integer_raw.loop3 <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop3),] %>% pull(name)
+if (length(cols.integer_raw.loop1) == 0 & exists('raw.loop1')) cols.integer_raw.loop1 <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop1),] %>% pull(name)
+if (length(cols.integer_raw.loop2) == 0 & exists('raw.loop2')) cols.integer_raw.loop2 <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop2),] %>% pull(name)
+if (length(cols.integer_raw.loop3) == 0 & exists('raw.loop3')) cols.integer_raw.loop3 <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop3),] %>% pull(name)
 
 outliers.list <- c()
 raw.data_frames.list <- c()
