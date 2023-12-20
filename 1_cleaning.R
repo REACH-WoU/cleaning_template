@@ -120,14 +120,13 @@ source('src/sections/section_4_post_check_for_leftover_cyrillic.R')
 
 # Check if any columns are equal to '999'/'99', enter any other values you're suspicious of
 
-code_for_check  <- c('99','999')
+code_for_check  <- c('9','999')
 
 source('src/sections/section_5_create_999_checks.R')
 
 print(cl_log_999)
 # if Anything got into cl_log_999, check it. If you want to delete it from your data run the command below
 source('src/sections/section_5_finish_999_checks.R')
-
 
 # ----------------------------------Section 6 - Your logic checks go here--------------------------------
 

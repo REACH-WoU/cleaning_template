@@ -67,9 +67,9 @@ if (length(cols.integer_raw.loop3) != 0) {
 } else raw.loop3.outliers <- data.frame()
 
 utilityR::generate.boxplot(outliers.list=outliers.list,
-                raw.data_frames.list=raw.data_frames.list,
-                columns.list=columns.list,
-                n.sd=n.sd, boxplot.path = "output/checking/outliers/outlier_analysis_")
+                           raw.data_frames.list=raw.data_frames.list,
+                           columns.list=columns.list,
+                           n.sd=n.sd, boxplot.path = "output/checking/outliers/outlier_analysis_")
 
 cleaning.log.outliers <- rbind(raw.main.outliers,raw.loop1.outliers,raw.loop2.outliers,raw.loop3.outliers)
 

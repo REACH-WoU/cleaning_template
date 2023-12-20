@@ -20,10 +20,10 @@ if(exists('raw.loop1')){
   other.responses.loop1 <- utilityR::find.responses(raw.loop1, other.db.loop1, is.loop = T)
   
   if(nrow(other.responses.loop1)>0){
-  other.responses.loop1 <- raw.loop1 %>% 
-    select(loop_index,all_of(na.omit(other.responses.loop1$ref.name))) %>% 
-    pivot_longer(cols =all_of(na.omit(other.responses.loop1$ref.name)), names_to = 'ref.name', values_to = 'selected.ref.value') %>% 
-    right_join(other.responses.loop1)
+    other.responses.loop1 <- raw.loop1 %>% 
+      select(loop_index,all_of(na.omit(other.responses.loop1$ref.name))) %>% 
+      pivot_longer(cols =all_of(na.omit(other.responses.loop1$ref.name)), names_to = 'ref.name', values_to = 'selected.ref.value') %>% 
+      right_join(other.responses.loop1)
   }else{other.responses.loop1<- data.frame()}
 }else{other.responses.loop1 <- data.frame()}
 
@@ -31,10 +31,10 @@ if(exists('raw.loop2')){
   other.db.loop2 <- other.db[other.db$name %in% colnames(raw.loop2),]
   other.responses.loop2 <- utilityR::find.responses(raw.loop2, other.db.loop2, is.loop = T)
   if(nrow(other.responses.loop2)>0){
-  other.responses.loop2 <- raw.loop2 %>% 
-    select(loop_index,all_of(na.omit(other.responses.loop2$ref.name))) %>% 
-    pivot_longer(cols =all_of(na.omit(other.responses.loop2$ref.name)), names_to = 'ref.name', values_to = 'selected.ref.value') %>% 
-    right_join(other.responses.loop2)
+    other.responses.loop2 <- raw.loop2 %>% 
+      select(loop_index,all_of(na.omit(other.responses.loop2$ref.name))) %>% 
+      pivot_longer(cols =all_of(na.omit(other.responses.loop2$ref.name)), names_to = 'ref.name', values_to = 'selected.ref.value') %>% 
+      right_join(other.responses.loop2)
   }else{other.responses.loop2<- data.frame()}
 }else{other.responses.loop2 <- data.frame()}
 if(exists('raw.loop3')){
@@ -90,25 +90,25 @@ trans.db.main <- trans.db[trans.db$name %in% colnames(raw.main),]
 trans.responses.main <- utilityR::find.responses(raw.main, trans.db.main)
 
 if(exists('raw.loop1')){
-trans.db.loop1 <- trans.db[trans.db$name %in% colnames(raw.loop1),]
-if(nrow(trans.db.loop1)>0){
-  trans.responses.loop1 <- utilityR::find.responses(raw.loop1, trans.db.loop1, is.loop = T)
-}else{trans.responses.loop1 <- data.frame()}
+  trans.db.loop1 <- trans.db[trans.db$name %in% colnames(raw.loop1),]
+  if(nrow(trans.db.loop1)>0){
+    trans.responses.loop1 <- utilityR::find.responses(raw.loop1, trans.db.loop1, is.loop = T)
+  }else{trans.responses.loop1 <- data.frame()}
 }else{trans.responses.loop1 <- data.frame()}
 
 if(exists('raw.loop2')){
-trans.db.loop2 <- trans.db[trans.db$name %in% colnames(raw.loop2),]
-if(nrow(trans.db.loop2)>0){
-  trans.responses.loop2 <- utilityR::find.responses(raw.loop2, trans.db.loop2, is.loop = T)
-}else{trans.responses.loop2 <- data.frame()}
+  trans.db.loop2 <- trans.db[trans.db$name %in% colnames(raw.loop2),]
+  if(nrow(trans.db.loop2)>0){
+    trans.responses.loop2 <- utilityR::find.responses(raw.loop2, trans.db.loop2, is.loop = T)
+  }else{trans.responses.loop2 <- data.frame()}
 }else{trans.responses.loop2 <- data.frame()}
 
 
 if(exists('raw.loop3')){
-trans.db.loop3 <- trans.db[trans.db$name %in% colnames(raw.loop3),]
-if(nrow(trans.db.loop3)>0){
-  trans.responses.loop3 <- utilityR::find.responses(raw.loop3, trans.db.loop3, is.loop = T)
-}else{trans.responses.loop3 <- data.frame()}
+  trans.db.loop3 <- trans.db[trans.db$name %in% colnames(raw.loop3),]
+  if(nrow(trans.db.loop3)>0){
+    trans.responses.loop3 <- utilityR::find.responses(raw.loop3, trans.db.loop3, is.loop = T)
+  }else{trans.responses.loop3 <- data.frame()}
 }else{trans.responses.loop3 <- data.frame()}
 
 # bind them all together
