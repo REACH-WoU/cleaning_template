@@ -27,16 +27,8 @@ if(length(sheet_names_new)>0){
 
 if(nrow(cl_log_999)>0){
   warning(paste0('detected ',nrow(cl_log_999),' ',code_for_check,' entries in your data check cl_log_999 for details'))
-  cleaning.log <- bind_rows(cleaning.log, cl_log_999)
 }
 
-raw.main  <- raw.main[!(raw.main$uuid %in% deletion.log.audits$uuid),]
-if(length(sheet_names_new)>0){
-  for(loop in sheet_names_new){
-    txt <- paste0(loop,'<-',loop,'[!(',loop,'$uuid %in% deletion.log.new$uuid),]')
-    eval(parse(text=txt))
-  }
-}
 
 
 
