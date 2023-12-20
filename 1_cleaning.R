@@ -9,7 +9,7 @@ directory_dictionary <- list(
   dir.responses = "output/checking/responses/", # the directory of your responses to open questions
   enum_colname = "enumerator_id", # the column that contains the enumerator ID,
   enum_comments = 'enum_comms', # the column that contains the enumerator's comments,
-  filename.tool = "resources/Reach_UKR2306_CCCM_DS_tool_r2_v3.xlsx", # the name of your Kobo tool and its path
+  filename.tool = "resources/Reach_UKR2306_CCCM_DS_tool_r2_v3 1.xlsx", # the name of your Kobo tool and its path
   data_name = "Reach_UKR2306_CCCM_DS_tool_r2_-_all_versions_-_False_-_2023-11-25-09-58-22 (1).xlsx", # the name of your dataframe
   data_path = "data/inputs/kobo_export/", # the path to your dataframe
   label_colname = 'label::English', # the name of your label column. Has to be identical in Kobo survey and choices sheets
@@ -101,8 +101,8 @@ write.xlsx(deletion.log.new, make.filename.xlsx("output/deletion_log/", "deletio
 source('src/sections/section_4_create_other_requests_files.R')
 
 # name that hosts the clean recode.others file, leave as '' if you don't have this file. Nothing will be recoded that way
-name_clean_others_file <- 'DS_r2_other_requests_script_2023_01_01'
-sheet_name_others <- 'Sheet1' # name of the sheet where you're holding your requests 
+name_clean_others_file <- 'DS_r2_other_requests_final_2023_12_04'
+sheet_name_others <- 'Sheet2' # name of the sheet where you're holding your requests 
 # name that hosts the clean translation requests file, leave as '' if you don't have this file. Nothing will be recoded that way
 name_clean_trans_file <- 'DS_r2_text_requests_script_2023_01_01' 
 

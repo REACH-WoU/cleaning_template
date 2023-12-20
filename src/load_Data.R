@@ -15,7 +15,11 @@ if(length(raw_data_filename) > 1) { stop("Found multiple files containing raw Ko
 }else if(length(raw_data_filename) == 1){
   
   ls <- excel_sheets(path = raw_data_filename)
-  sheet_names <- c('kobo.raw.main',paste0('kobo.raw.loop',1:(length(ls)-1)))
+  sheet_names <- if(length(ls)>1){
+    c('kobo.raw.main',paste0('kobo.raw.loop',1:(length(ls)-1)))
+  }else{
+    'kobo.raw.main'
+  }
   for(i in 1:length(ls)){
     if(i==1){
       kobo.raw.main <- readxl::read_xlsx(raw_data_filename, col_types = "text", sheet = ls[i]) %>%
@@ -31,7 +35,7 @@ if(length(raw_data_filename) > 1) { stop("Found multiple files containing raw Ko
            submission_id = "_submission__id",
            submission_submission_time ="_submission__submission_time") %>% 
     mutate(loop_index = paste0("loop',i-1,'_", loop_index))'
-                    )
+      )
       eval(parse(text = txt))
     }
   }
