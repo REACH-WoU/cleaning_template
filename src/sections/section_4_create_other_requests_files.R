@@ -37,6 +37,7 @@ if(exists('raw.loop2')){
       right_join(other.responses.loop2)
   }else{other.responses.loop2<- data.frame()}
 }else{other.responses.loop2 <- data.frame()}
+
 if(exists('raw.loop3')){
   other.db.loop3 <- other.db[other.db$name %in% colnames(raw.loop3),]
   other.responses.loop3 <- utilityR::find.responses(raw.loop3, other.db.loop3, is.loop = T)
@@ -117,7 +118,7 @@ trans.responses <- rbind(trans.responses.main,
                          trans.responses.loop2,
                          trans.responses.loop3)
 
-rm(trans.responses.main, trans.responses.loop1, trans.db.loop2, trans.responses.loop3)
+rm(trans.responses.main, trans.responses.loop1, trans.responses.loop2, trans.responses.loop3)
 
 # translate all of the responses
 trans.responses.j <- utilityR::translate.responses(responses = trans.responses,
