@@ -5,7 +5,6 @@ if(name_clean_others_file != ''){
                                         name_clean_others_file,
                                         sheet = sheet_name_others, validate = T)  # specify Sheet2 because the first one is a readme
   
-  
   if(any(or.edited$check == 1)){
     issue <- paste0('uuid: ', or.edited[or.edited$check == 1,]$uuid,', variable: ',or.edited[or.edited$check == 1,]$name)
     stop(paste0('Some of your entries have errors, please double-check: ', paste0(issue,collapse = '\n')))
@@ -14,6 +13,20 @@ if(name_clean_others_file != ''){
   if(any(or.edited$check == 3)){
     issue <- paste0('uuid: ', or.edited[or.edited$check == 3,]$uuid,', variable: ',or.edited[or.edited$check == 3,]$name)
     stop(paste0('Some of your entries are empty, please double-check: ', paste0(issue,collapse = '\n')))
+  }
+  
+  consistency_check <- or.edited %>% select(uuid, existing.v, ref.name) %>% filter(!is.na(existing.v)) %>% 
+    tidyr::separate_rows(existing.v  , sep= "[;\r\n]") %>% 
+    mutate(existing.v = trimws(existing.v)) %>% 
+    filter(!existing.v=='') %>% 
+    left_join((tool.survey %>% select(name, list_name)), join_by(ref.name==name )) %>% 
+    anti_join(tool.choices %>% select(list_name,directory_dictionary$label_colname) %>% 
+                rename('existing.v'=directory_dictionary$label_colname))
+  
+  
+  if(nrow(consistency_check)>0){
+    stop("Some of the choices that you've selected in the recode.others file do not match the labels that you have in your
+         tool. Please check the consistency_check object for more details")
   }
   
   # run the bits below
@@ -50,7 +63,7 @@ if(name_clean_others_file != ''){
   # Create a cleaning log file for each loop if there's a need for it.
   cleaning.log.other.main <- utilityR::recode.others(data = raw.main,
                                                      or.edited = raw.main_requests,
-                                                     orig_response_col = 'responses',
+                                                     orig_response_col = 'response.uk',
                                                      is.loop = F,
                                                      tool.choices = tool.choices,
                                                      tool.survey = tool.survey)
