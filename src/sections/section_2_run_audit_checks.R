@@ -56,6 +56,11 @@ analysis.result <- utilityR::analyse.similarity(res.soft_duplicates, enum.column
                                                 boxplot.path="output/checking/audit/enumerators_surveys_")
 analysis <- analysis.result$analysis
 outliers <- analysis.result$outliers
+
+write.xlsx(res.soft_duplicates, make.filename.xlsx(directory_dictionary$dir.audits.check, "soft_duplicates"))
+write.xlsx(analysis, make.filename.xlsx(directory_dictionary$dir.audits.check, "soft_duplicates_analysis"))
+write.xlsx(outliers, make.filename.xlsx(directory_dictionary$dir.audits.check, "soft_duplicates_outliers"))
+
 print("Check outliers of enumerators surveys group in output/checking/outliers/enumerators_surveys_2sd.pdf")
 print("Also, you can find analysis of the enumerators in analysis data frame, and outliers in outliers data frame.
       If you want to check data without analysis, res.soft_duplicates for you. You can do different manipulations by yourself")
