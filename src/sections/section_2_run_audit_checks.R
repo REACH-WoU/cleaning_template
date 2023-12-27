@@ -48,16 +48,17 @@ if(nrow(survey_durations_check) > 0){
 
 ## Soft duplicates (less than 12 different columns?)
 
-res.soft_duplicates <- find.similar.surveys(raw.main, tool.survey, uuid = "uuid") %>% 
-  filter(number_different_columns <= min_num_diff_questions) %>% 
-  relocate(uuid, num_cols_not_NA,num_cols_idnk,`_id_most_similar_survey`,
-           number_different_columns) %>% 
-  arrange(number_different_columns)
+print("Checking for soft duplicates in data grouped by enumerators...")
+# if you don't really need to have boxplot with the statistics of enumerators, you can set visualise=F
+res.soft_duplicates <- utilityR::find.similar.surveys(raw.main, tool.survey, uuid = "uuid", enum.column=directory_dictionary$enum_colname)
 
-if(nrow(res.soft_duplicates) > 0){
-  write.xlsx(res.soft_duplicates, make.filename.xlsx(directory_dictionary$dir.audits.check, "soft_duplicates"))
-}else{
-  cat("\nThere are no soft duplicates to check :)")
-}
+analysis.result <- utilityR::analyse.similarity(res.soft_duplicates, enum.column=directory_dictionary$enum_colname, visualise=T,
+                                                boxplot.path="output/checking/audit/enumerators_surveys_")
+analysis <- analysis.result$analysis
+outliers <- analysis.result$outliers
+print("Check outliers of enumerators surveys group in output/checking/outliers/enumerators_surveys_2sd.pdf")
+print("Also, you can find analysis of the enumerators in analysis data frame, and outliers in outliers data frame.
+      If you want to check data without analysis, res.soft_duplicates for you. You can do different manipulations by yourself")
+
 rm(audits, data.audit)
 
