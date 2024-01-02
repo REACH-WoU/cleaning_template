@@ -2,7 +2,7 @@
 # get all of the other questions
 other.db <- utilityR::get.other.db(tool.choices = tool.choices,
                                    tool.survey = tool.survey,
-                                   label_colname = label_colname)
+                                   label_colname = directory_dictionary$label_colname)
 
 
 # Separate the other questions files by loop
