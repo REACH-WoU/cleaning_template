@@ -46,7 +46,9 @@ if(nrow(survey_durations_check) > 0){
 }else cat("\nThere are no survey durations to check :)")
 
 
-## Soft duplicates (less than 12 different columns?)
+## Soft duplicates (less than 8 different columns?)
+
+min_num_diff_questions <- 8
 
 print("Checking for soft duplicates in data grouped by enumerators...")
 # if you don't really need to have boxplot with the statistics of enumerators, you can set visualise=F
@@ -57,13 +59,21 @@ analysis.result <- utilityR::analyse.similarity(res.soft_duplicates, enum.column
 analysis <- analysis.result$analysis
 outliers <- analysis.result$outliers
 
-write.xlsx(res.soft_duplicates, make.filename.xlsx(directory_dictionary$dir.audits.check, "soft_duplicates"))
+soft.duplicates <- res.soft_duplicates %>%
+  filter(number_different_columns <= min_num_diff_questions) %>%
+  relocate(uuid, num_cols_not_NA,num_cols_idnk,`_id_most_similar_survey`,
+           number_different_columns) %>%
+  arrange(number_different_columns)
+
+write.xlsx(soft.duplicates, make.filename.xlsx(directory_dictionary$dir.audits.check, "soft_duplicates"))
 write.xlsx(analysis, make.filename.xlsx(directory_dictionary$dir.audits.check, "soft_duplicates_analysis"))
 write.xlsx(outliers, make.filename.xlsx(directory_dictionary$dir.audits.check, "soft_duplicates_outliers"))
 
-print("Check outliers of enumerators surveys group in output/checking/outliers/enumerators_surveys_2sd.pdf")
-print("Also, you can find analysis of the enumerators in analysis data frame, and outliers in outliers data frame.
+cat("Check soft duplicates in soft.duplicates data frame or soft_duplicates xlsx file")
+
+cat("Check outliers of enumerators surveys group in output/checking/outliers/enumerators_surveys_2sd.pdf")
+cat("Also, you can find analysis of the enumerators in analysis data frame, and outliers in outliers data frame.
       If you want to check data without analysis, res.soft_duplicates for you. You can do different manipulations by yourself")
 
-rm(audits, data.audit)
+rm(audits, data.audit, analysis.result)
 

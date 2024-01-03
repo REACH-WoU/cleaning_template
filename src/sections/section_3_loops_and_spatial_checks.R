@@ -64,6 +64,8 @@
 #   relocate(loop_index, .after = uuid)
 # cleaning.log <- cleaning.log.loop_inconsitency   # a brand new cleaning log
 # 
+cleaning.log <- tribble()
+# 
 # rm(ids_to_clean, loop_indexes_to_delete, counts_loop1)
 # 
 # #-------------------------------------------------------------------------------
