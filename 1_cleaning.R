@@ -3,6 +3,8 @@ rm(list = ls())
 
 
 directory_dictionary <- list(
+  research_cycle_name = 'xxxx',
+  round = 'xxxx',
   dir.audits = "data/inputs/audits/reach/", # The directory to your audit files
   dir.audits.check = "output/checking/audit/",# The directory to your audit summary files (you'll be checking these)
   dir.requests = "output/checking/requests/", # the directory of your other_requests file 
@@ -124,21 +126,23 @@ code_for_check  <- c('99','999')
 source('src/sections/section_5_create_999_checks.R')
 
 print(cl_log_999)
+
 # if Anything got into cl_log_999, check it. If you want to delete it from your data run the command below
+# set apply_999_changes to 'Yes' if you want to remove the entries from code_for_check
+apply_999_changes <- 'No'
+
 source('src/sections/section_5_finish_999_checks.R')
 
-# ----------------------------------Section 6 - Your logic checks go here--------------------------------
+# ----------------------------------Section L - Your logic checks go here--------------------------------
 
 cleaning.log.checks.direct <- tibble()
 
 
 # ------------------------------------------------------------------------------
 
-#############################################################################################################
-# 5) Outliers
-#############################################################################################################
-# save.image(file = "Environment.RData")
-# load("Environment.RData")
+# ----------------------------------Section 6 - Check for outliers--------------------------------
+
+# specify the number of standard deviations you want to use
 n.sd <- 3
 
 # specify methods for  detecting outliers
@@ -176,9 +180,7 @@ source('src/sections/section_6_finish_outlier_check.R')
 cleaning.log <- rbind(cleaning.log,cleaning.log.outliers)
 
 
-#-------------------------------------------------------------------------------
-# 6) Remove PII columns, apply any last changes, then save cleaned dataset
-################################################################################
+# ----------------------------------Section 7 - Remove PII columns, apply any last changes, then save cleaned dataset--------------------------------
 
 # finalize cleaning log:
 cleaning.log <- cleaning.log %>% distinct() %>% 

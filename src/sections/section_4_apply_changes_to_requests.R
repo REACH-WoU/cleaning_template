@@ -29,6 +29,8 @@ if(name_clean_others_file != ''){
          tool. Please check the consistency_check object for more details")
   }
   
+  
+  
   # run the bits below
   
   # separate the other translations to fit each individual dataframe that you have - no unnecessary variables in each
@@ -58,12 +60,12 @@ if(name_clean_others_file != ''){
   
   
   # If you face any weird double spaces
-  #tool.choices$`label::English`=str_squish(tool.choices$`label::English`)
+  tool.choices$`label::English`=str_squish(tool.choices$`label::English`)
   
   # Create a cleaning log file for each loop if there's a need for it.
   cleaning.log.other.main <- utilityR::recode.others(data = raw.main,
                                                      or.edited = raw.main_requests,
-                                                     orig_response_col = 'response.uk',
+                                                     orig_response_col = 'responses',
                                                      is.loop = F,
                                                      tool.choices = tool.choices,
                                                      tool.survey = tool.survey)
