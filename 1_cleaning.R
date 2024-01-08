@@ -16,7 +16,6 @@ directory_dictionary <- list(
   dctime_short = "XXXX" # the data of your survey (just for naming)
 )
 
-
 api_key <- source('resources/microsoft.api.key_regional.R')$value
 
 #-------------------------------Initialize packages, load tools -----------------------------
@@ -234,7 +233,7 @@ txt <- paste0(
   'datasheets_anon <-list("main" =raw.main,',
   paste0('"',ls_loops,'" = ',sheet_names_new, collapse = ','),')'
 )}else{
-  txt <- 'datasheets <-list("main" =raw.main)'
+  txt <- 'datasheets_anon <-list("main" =raw.main)'
 }
 eval(parse(text= txt))
 
