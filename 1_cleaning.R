@@ -113,7 +113,7 @@ source('src/sections/section_4_apply_changes_to_requests.R')
 # Check if your data still has any cyrillic entries
 
 # variables that will be omitted from the analysis
-vars_to_omit <- c('settlement') # add more names as needed
+vars_to_omit <- c('settlement', directory_dictionary$enum_colname, directory_dictionary$enum_comments) # add more names as needed
 
 source('src/sections/section_4_post_check_for_leftover_cyrillic.R')
 
