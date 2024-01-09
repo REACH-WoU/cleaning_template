@@ -1,3 +1,5 @@
+deletion.log.new <- data.frame()
+deletion.log.dupl <- data.frame()
 
 #check for duplicates 
 ids <- raw.main$uuid[duplicated(raw.main$uuid)]
@@ -5,20 +7,20 @@ ids <- raw.main$uuid[duplicated(raw.main$uuid)]
 if (length(ids)>0) {
   warning("Duplicate uuids detected: ", length(ids))
   # add to deletion log
-  deletion.log.new <- utilityR::create.deletion.log(raw.main %>% filter(uuid %in% ids),
-                                                    directory_dictionary$enum_colname, "Duplicate") # a brand new deletion log
+  deletion.log.dupl <- utilityR::create.deletion.log(raw.main %>% filter(duplicated(raw.main[['uuid']])),
+                                                     directory_dictionary$enum_colname, "Duplicate") # a brand new deletion log
 } else{
-  deletion.log.new <- data.frame()
+  deletion.log.dupl <- data.frame()
 }
 
 if(length(sheet_names_new)>0){
   for(loop in sheet_names_new)
-  txt <- paste0(loop,'$loop_index[duplicated(',loop,'$loop_index)]')
+    txt <- paste0(loop,'$loop_index[duplicated(',loop,'$loop_index)]')
   ids <- eval(parse(text = txt))
   
   if (length(ids)>0){
     warning("Duplicate uuids detected: ", length(ids))
-    txt <- paste0(loop,' %>% filter(loop_index %in% ids)')
+    txt <- paste0(loop,' %>% filter(duplicated(',loop,'[["loop_index"]]))')
     dupl_df<- eval(parse(text = txt))
     
     # add to deletion log
@@ -26,12 +28,32 @@ if(length(sheet_names_new)>0){
                                                        directory_dictionary$enum_colname, "Duplicate",
                                                        is.loop = T,
                                                        data.main = raw.main) # a brand new deletion log
-    deletion.log.new <- bind_rows(deletion.log.new,deletion.log.loop)
+    deletion.log.dupl <- bind_rows(deletion.log.dupl,deletion.log.loop)
   }
   
 }
 
-rm(ids)
+## run this to remove duplicates ##
+raw.main  <- raw.main %>% 
+  group_by(uuid) %>% 
+  mutate(n= 1,
+         n=cumsum(n)
+  ) %>% 
+  filter(n==1) %>% 
+  select(-n)
+
+if(length(sheet_names_new)>0){
+  for(loop in sheet_names_new){
+    txt <- paste0(loop,'<-',loop,'%>% 
+  group_by(loop_index) %>% 
+  mutate(n= 1,
+         n=cumsum(n)
+         ) %>% 
+  filter(n==1) %>% 
+  select(-n)')
+    eval(parse(text=txt))
+  }
+}
 
 
 # ------------------------------- Check for no consent ----------------------------------
@@ -96,3 +118,5 @@ if(length(sheet_names_new)>0){
 ####################################################
 
 rm(test_submission, deletion.log.test_submission,deletion.log.no_consents)
+
+deletion.log.new <- rbind(deletion.log.new,deletion.log.dupl)

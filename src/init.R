@@ -17,15 +17,6 @@ make.filename.xlsx <- function(dir = ".", name, no_date = F) return(gsub("//","/
 
 
 
-source("src/utils/misc_utils.R")
-source('src/utils/utils_analysis.R')
-source("src/utils/check_kobo.R")
-source("src/utils/kobo_utils.R")
-source("src/utils/regional_detect_data_falsification.R")
-source("src/utils/utils_audit.R")
-source("src/utils/utils_cleaning.R")
-source("src/utils/utils_cleaning_loops.R")
-
 options(scipen = 999)
 options(dplyr.summarise.inform = FALSE)
 ###############################################################################
