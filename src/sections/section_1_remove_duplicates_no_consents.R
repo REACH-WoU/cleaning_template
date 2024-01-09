@@ -94,7 +94,7 @@ deletion.log.new <- rbind(deletion.log.new, deletion.log.no_consents)
 
 # if you have any test submissions, define them here 
 test_submission <- raw.main %>% 
-  filter(tolower(!!sym(directory_dictionary$enum_comments)) %in% c("test",'тест'))
+  filter(grepl('^тест|^test', tolower(!!sym(directory_dictionary$enum_comments))))
 
 if (nrow(test_submission) > 0){
   warning("test_submission detected: ", nrow(test_submission))
