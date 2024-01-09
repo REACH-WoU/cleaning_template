@@ -7,7 +7,7 @@ directory_dictionary <- list(
   round = 'xxxx',
   dir.audits = "data/inputs/audits/reach/", # The directory to your audit files
   dir.audits.check = "output/checking/audit/",# The directory to your audit summary files (you'll be checking these)
-  dir.requests = "output/checking/requests/", # the directory of your other_requests file 
+  dir.requests = "output/checking/requests/", # the directory of your other_requests file
   dir.responses = "output/checking/responses/", # the directory of your responses to open questions
   enum_colname = "XXX", # the column that contains the enumerator ID,
   enum_comments = 'XXX', # the column that contains the enumerator's comments,
@@ -27,7 +27,7 @@ source("src/init.R")
 
 source("src/load_Data.R")
 
-## Section below only for research cycles that requires cleaning on regular basis and use one kobo server. 
+## Section below only for research cycles that requires cleaning on regular basis and use one kobo server.
 cat(paste0("Section below only for research cycles that requires cleaning on regular basis and use one kobo server."))
 
 # --------------------------------Section  0  - Data pre-processing -----------------------------------
@@ -61,10 +61,10 @@ date_cols_main <- c("start","end", tool.survey %>% filter(type == "date" & datas
                     "submission_time") # add them here
 
 # transform them into the datetime format
-raw.main <- raw.main %>% 
+raw.main <- raw.main %>%
   mutate_at(date_cols_main, ~ifelse(!str_detect(., '-'), as.character(convertToDateTime(as.numeric(.))), .))
 
-rm(date_cols_main)  
+rm(date_cols_main)
 
 
 
@@ -77,9 +77,9 @@ source('src/sections/section_1_remove_duplicates_no_consents.R')
 min_duration_interview <- 5 # minimum duration of an interview (screen time in minutes)
 max_duration_interview <- 60 # maximum duration of an interview (screen time in minutes)
 pre_process_audit_files <- F # whether cases of respondent taking too long to answer 1 question should cleaned.
-# if pre_process_audit_files =T, enter the maximum time that  the respondent can spend answering 1 question (in minutes) 
-max_length_answer_1_question <- 20 
-# Used during the check for soft duplicates. 
+# if pre_process_audit_files =T, enter the maximum time that  the respondent can spend answering 1 question (in minutes)
+max_length_answer_1_question <- 20
+# Used during the check for soft duplicates.
 # The minimum number of different columns that makes us confident that the entry is not a soft duplicate
 min_num_diff_questions <- 8
 
@@ -99,13 +99,24 @@ write.xlsx(deletion.log.new, make.filename.xlsx("output/deletion_log/", "deletio
 
 #--------------------------- Section  4 - Others and translations----------------------------------------------------
 
+# Check that cumulative and binary values in select multiple match each other
+
+cleaning.log.match <- utilityR::select.multiple.check(raw.data, tool.survey, id_col="uuid")
+
+if (nrow(cleaning.log.match) > 0) {
+  write.xlsx(cleaning.log.match, "output/checking/select_multiple_match.xlsx", overwrite=T)
+}
+
+
+# if res is empty, data doesn't consist mismatching, if res has a lot of recordings for 1 uuid - probably you have duplicates
+
 source('src/sections/section_4_create_other_requests_files.R')
 
 # name that hosts the clean recode.others file, leave as '' if you don't have this file. Nothing will be recoded that way
 name_clean_others_file <- 'XXX'
-sheet_name_others <- 'Sheet2' # name of the sheet where you're holding your requests 
+sheet_name_others <- 'Sheet2' # name of the sheet where you're holding your requests
 # name that hosts the clean translation requests file, leave as '' if you don't have this file. Nothing will be recoded that way
-name_clean_trans_file <- 'XXX' 
+name_clean_trans_file <- 'XXX'
 
 
 source('src/sections/section_4_apply_changes_to_requests.R')
@@ -183,7 +194,7 @@ cleaning.log <- rbind(cleaning.log,cleaning.log.outliers)
 # ----------------------------------Section 7 - Remove PII columns, apply any last changes, then save cleaned dataset--------------------------------
 
 # finalize cleaning log:
-cleaning.log <- cleaning.log %>% distinct() %>% 
+cleaning.log <- cleaning.log %>% distinct() %>%
   filter(old.value %!=na% new.value) %>% left_join(raw.main %>% select(uuid, any_of(directory_dictionary$enum_colname)))
 
 if (length(list.files(make.filename.xlsx("output/cleaning_log", "cleaning_log", no_date = T))) > 0) {
