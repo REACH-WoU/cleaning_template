@@ -1,6 +1,6 @@
 
 # load your audit files
-audits <- utilityR::load.audit.files(directory_dictionary$dir.audits, uuids = raw.main$uuid, track.changes = F) 
+audits <- utilityR::load.audit.files(directory_dictionary$dir.audits, uuids = raw.main$uuid, track.changes = F)
 
 # add 2 more columns to make readable start and end columns
 audits$start_readable <- as.POSIXct(audits$start / 1000, origin = "1970-01-01")
@@ -16,8 +16,8 @@ if(pre_process_audit_files){
 if(nrow(audits) == 0) {
   audits.summary <- tibble(uuid = raw.main$uuid, tot.rt = NA)
 }else{
-  audits.summary <- audits %>% 
-    group_by(uuid) %>% 
+  audits.summary <- audits %>%
+    group_by(uuid) %>%
     group_modify(~utilityR::process.uuid(.x))
 }
 
@@ -30,9 +30,9 @@ data.audit <- raw.main %>%
   select(uuid, !!sym(directory_dictionary$enum_colname), start, end, duration_mins, num_NA_cols, num_dk_cols, num_other_cols)
 
 # Generate the audits_summary file - General info about each interview
-audits.summary <- data.audit %>% 
-  left_join(audits.summary, by="uuid") %>% select(-contains("/")) %>% 
-  relocate(uuid, duration_mins, num_NA_cols, num_dk_cols, num_other_cols, tot.rt) %>% 
+audits.summary <- data.audit %>%
+  left_join(audits.summary, by="uuid") %>% select(-contains("/")) %>%
+  relocate(uuid, duration_mins, num_NA_cols, num_dk_cols, num_other_cols, tot.rt) %>%
   arrange(duration_mins)
 
 write.xlsx(audits.summary, make.filename.xlsx(directory_dictionary$dir.audits.check, "audits_summary"))
@@ -46,9 +46,9 @@ if(nrow(survey_durations_check) > 0){
 }else cat("\nThere are no survey durations to check :)")
 
 
-## Soft duplicates (less than 8 different columns?)
+## Soft duplicates (less than 5 different columns?)
 
-min_num_diff_questions <- 8
+min_num_diff_questions <- 5
 
 print("Checking for soft duplicates in data grouped by enumerators...")
 # if you don't really need to have boxplot with the statistics of enumerators, you can set visualise=F
