@@ -3,9 +3,11 @@ rm(list = ls())
 
 
 directory_dictionary <- list(
+  research_cycle_name = 'xxxx',
+  round = 'xxxx',
   dir.audits = "data/inputs/audits/reach/", # The directory to your audit files
   dir.audits.check = "output/checking/audit/",# The directory to your audit summary files (you'll be checking these)
-  dir.requests = "output/checking/requests/", # the directory of your other_requests file 
+  dir.requests = "output/checking/requests/", # the directory of your other_requests file
   dir.responses = "output/checking/responses/", # the directory of your responses to open questions
   enum_colname = "XXX", # the column that contains the enumerator ID,
   enum_comments = 'XXX', # the column that contains the enumerator's comments,
@@ -16,7 +18,6 @@ directory_dictionary <- list(
   dctime_short = "XXXX" # the data of your survey (just for naming)
 )
 
-
 api_key <- source('resources/microsoft.api.key_regional.R')$value
 
 #-------------------------------Initialize packages, load tools -----------------------------
@@ -26,7 +27,7 @@ source("src/init.R")
 
 source("src/load_Data.R")
 
-## Section below only for research cycles that requires cleaning on regular basis and use one kobo server. 
+## Section below only for research cycles that requires cleaning on regular basis and use one kobo server.
 cat(paste0("Section below only for research cycles that requires cleaning on regular basis and use one kobo server."))
 
 # --------------------------------Section  0  - Data pre-processing -----------------------------------
@@ -60,10 +61,10 @@ date_cols_main <- c("start","end", tool.survey %>% filter(type == "date" & datas
                     "submission_time") # add them here
 
 # transform them into the datetime format
-raw.main <- raw.main %>% 
+raw.main <- raw.main %>%
   mutate_at(date_cols_main, ~ifelse(!str_detect(., '-'), as.character(convertToDateTime(as.numeric(.))), .))
 
-rm(date_cols_main)  
+rm(date_cols_main)
 
 
 
@@ -76,9 +77,9 @@ source('src/sections/section_1_remove_duplicates_no_consents.R')
 min_duration_interview <- 5 # minimum duration of an interview (screen time in minutes)
 max_duration_interview <- 60 # maximum duration of an interview (screen time in minutes)
 pre_process_audit_files <- F # whether cases of respondent taking too long to answer 1 question should cleaned.
-# if pre_process_audit_files =T, enter the maximum time that  the respondent can spend answering 1 question (in minutes) 
-max_length_answer_1_question <- 20 
-# Used during the check for soft duplicates. 
+# if pre_process_audit_files =T, enter the maximum time that  the respondent can spend answering 1 question (in minutes)
+max_length_answer_1_question <- 20
+# Used during the check for soft duplicates.
 # The minimum number of different columns that makes us confident that the entry is not a soft duplicate
 min_num_diff_questions <- 8
 
@@ -98,13 +99,24 @@ write.xlsx(deletion.log.new, make.filename.xlsx("output/deletion_log/", "deletio
 
 #--------------------------- Section  4 - Others and translations----------------------------------------------------
 
+# Check that cumulative and binary values in select multiple match each other
+
+cleaning.log.match <- utilityR::select.multiple.check(raw.data, tool.survey, id_col="uuid")
+
+if (nrow(cleaning.log.match) > 0) {
+  write.xlsx(cleaning.log.match, "output/checking/select_multiple_match.xlsx", overwrite=T)
+}
+
+
+# if res is empty, data doesn't consist mismatching, if res has a lot of recordings for 1 uuid - probably you have duplicates
+
 source('src/sections/section_4_create_other_requests_files.R')
 
 # name that hosts the clean recode.others file, leave as '' if you don't have this file. Nothing will be recoded that way
 name_clean_others_file <- 'XXX'
-sheet_name_others <- 'Sheet2' # name of the sheet where you're holding your requests 
+sheet_name_others <- 'Sheet2' # name of the sheet where you're holding your requests
 # name that hosts the clean translation requests file, leave as '' if you don't have this file. Nothing will be recoded that way
-name_clean_trans_file <- 'XXX' 
+name_clean_trans_file <- 'XXX'
 
 
 source('src/sections/section_4_apply_changes_to_requests.R')
@@ -112,7 +124,7 @@ source('src/sections/section_4_apply_changes_to_requests.R')
 # Check if your data still has any cyrillic entries
 
 # variables that will be omitted from the analysis
-vars_to_omit <- c('settlement') # add more names as needed
+vars_to_omit <- c('settlement', directory_dictionary$enum_colname, directory_dictionary$enum_comments) # add more names as needed
 
 source('src/sections/section_4_post_check_for_leftover_cyrillic.R')
 
@@ -125,21 +137,23 @@ code_for_check  <- c('99','999')
 source('src/sections/section_5_create_999_checks.R')
 
 print(cl_log_999)
+
 # if Anything got into cl_log_999, check it. If you want to delete it from your data run the command below
+# set apply_999_changes to 'Yes' if you want to remove the entries from code_for_check
+apply_999_changes <- 'No'
+
 source('src/sections/section_5_finish_999_checks.R')
 
-# ----------------------------------Section 6 - Your logic checks go here--------------------------------
+# ----------------------------------Section L - Your logic checks go here--------------------------------
 
 cleaning.log.checks.direct <- tibble()
 
 
 # ------------------------------------------------------------------------------
 
-#############################################################################################################
-# 5) Outliers
-#############################################################################################################
-# save.image(file = "Environment.RData")
-# load("Environment.RData")
+# ----------------------------------Section 6 - Check for outliers--------------------------------
+
+# specify the number of standard deviations you want to use
 n.sd <- 3
 
 # specify methods for  detecting outliers
@@ -177,12 +191,10 @@ source('src/sections/section_6_finish_outlier_check.R')
 cleaning.log <- rbind(cleaning.log,cleaning.log.outliers)
 
 
-#-------------------------------------------------------------------------------
-# 6) Remove PII columns, apply any last changes, then save cleaned dataset
-################################################################################
+# ----------------------------------Section 7 - Remove PII columns, apply any last changes, then save cleaned dataset--------------------------------
 
 # finalize cleaning log:
-cleaning.log <- cleaning.log %>% distinct() %>% 
+cleaning.log <- cleaning.log %>% distinct() %>%
   filter(old.value %!=na% new.value) %>% left_join(raw.main %>% select(uuid, any_of(directory_dictionary$enum_colname)))
 
 if (length(list.files(make.filename.xlsx("output/cleaning_log", "cleaning_log", no_date = T))) > 0) {
@@ -234,7 +246,7 @@ txt <- paste0(
   'datasheets_anon <-list("main" =raw.main,',
   paste0('"',ls_loops,'" = ',sheet_names_new, collapse = ','),')'
 )}else{
-  txt <- 'datasheets <-list("main" =raw.main)'
+  txt <- 'datasheets_anon <-list("main" =raw.main)'
 }
 eval(parse(text= txt))
 

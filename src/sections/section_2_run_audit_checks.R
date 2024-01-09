@@ -1,6 +1,6 @@
 
 # load your audit files
-audits <- utilityR::load.audit.files(directory_dictionary$dir.audits, uuids = raw.main$uuid, track.changes = F) 
+audits <- utilityR::load.audit.files(directory_dictionary$dir.audits, uuids = raw.main$uuid, track.changes = F)
 
 # add 2 more columns to make readable start and end columns
 audits$start_readable <- as.POSIXct(audits$start / 1000, origin = "1970-01-01")
@@ -16,8 +16,8 @@ if(pre_process_audit_files){
 if(nrow(audits) == 0) {
   audits.summary <- tibble(uuid = raw.main$uuid, tot.rt = NA)
 }else{
-  audits.summary <- audits %>% 
-    group_by(uuid) %>% 
+  audits.summary <- audits %>%
+    group_by(uuid) %>%
     group_modify(~utilityR::process.uuid(.x))
 }
 
@@ -30,9 +30,9 @@ data.audit <- raw.main %>%
   select(uuid, !!sym(directory_dictionary$enum_colname), start, end, duration_mins, num_NA_cols, num_dk_cols, num_other_cols)
 
 # Generate the audits_summary file - General info about each interview
-audits.summary <- data.audit %>% 
-  left_join(audits.summary, by="uuid") %>% select(-contains("/")) %>% 
-  relocate(uuid, duration_mins, num_NA_cols, num_dk_cols, num_other_cols, tot.rt) %>% 
+audits.summary <- data.audit %>%
+  left_join(audits.summary, by="uuid") %>% select(-contains("/")) %>%
+  relocate(uuid, duration_mins, num_NA_cols, num_dk_cols, num_other_cols, tot.rt) %>%
   arrange(duration_mins)
 
 write.xlsx(audits.summary, make.filename.xlsx(directory_dictionary$dir.audits.check, "audits_summary"))
@@ -46,18 +46,34 @@ if(nrow(survey_durations_check) > 0){
 }else cat("\nThere are no survey durations to check :)")
 
 
-## Soft duplicates (less than 12 different columns?)
+## Soft duplicates (less than 5 different columns?)
 
-res.soft_duplicates <- find.similar.surveys(raw.main, tool.survey, uuid = "uuid") %>% 
-  filter(number_different_columns <= min_num_diff_questions) %>% 
+min_num_diff_questions <- 5
+
+print("Checking for soft duplicates in data grouped by enumerators...")
+# if you don't really need to have boxplot with the statistics of enumerators, you can set visualise=F
+res.soft_duplicates <- utilityR::find.similar.surveys(raw.main, tool.survey, uuid = "uuid", enum.column=directory_dictionary$enum_colname)
+
+analysis.result <- utilityR::analyse.similarity(res.soft_duplicates, enum.column=directory_dictionary$enum_colname, visualise=T,
+                                                boxplot.path="output/checking/audit/enumerators_surveys_")
+analysis <- analysis.result$analysis
+outliers <- analysis.result$outliers
+
+soft.duplicates <- res.soft_duplicates %>%
+  filter(number_different_columns <= min_num_diff_questions) %>%
   relocate(uuid, num_cols_not_NA,num_cols_idnk,`_id_most_similar_survey`,
-           number_different_columns) %>% 
+           number_different_columns) %>%
   arrange(number_different_columns)
 
-if(nrow(res.soft_duplicates) > 0){
-  write.xlsx(res.soft_duplicates, make.filename.xlsx(directory_dictionary$dir.audits.check, "soft_duplicates"))
-}else{
-  cat("\nThere are no soft duplicates to check :)")
-}
-rm(audits, data.audit)
+write.xlsx(soft.duplicates, make.filename.xlsx(directory_dictionary$dir.audits.check, "soft_duplicates"))
+write.xlsx(analysis, make.filename.xlsx(directory_dictionary$dir.audits.check, "soft_duplicates_analysis"))
+write.xlsx(outliers, make.filename.xlsx(directory_dictionary$dir.audits.check, "soft_duplicates_outliers"))
+
+cat("Check soft duplicates in soft.duplicates data frame or soft_duplicates xlsx file")
+
+cat("Check outliers of enumerators surveys group in output/checking/outliers/enumerators_surveys_2sd.pdf")
+cat("Also, you can find analysis of the enumerators in analysis data frame, and outliers in outliers data frame.
+      If you want to check data without analysis, res.soft_duplicates for you. You can do different manipulations by yourself")
+
+rm(audits, data.audit, analysis.result)
 

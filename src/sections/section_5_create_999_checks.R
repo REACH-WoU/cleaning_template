@@ -17,7 +17,7 @@ if(length(sheet_names_new)>0){
     filter(type == "integer" & datasheet != "main" & name %in% names(',sheet_names_new[[i]],')) %>% 
     pull(name)')
     eval(parse(text=txt))
-    txt <- paste0('cl_log_999_loop',i,' <- utilityR::recode.set.NA.if(raw.loop1,int_cols_loop1, code = code_for_check,issue = "Wrong entry")')
+    txt <- paste0('cl_log_999_loop',i,' <- utilityR::recode.set.NA.if(raw.loop',i,',int_cols_loop',i,', code = code_for_check,issue = "Wrong entry")')
     eval(parse(text=txt))
     txt <- paste0('bind_rows(cl_log_999,cl_log_999_loop',i,')')
     cl_log_999 <- eval(parse(text=txt))
@@ -26,7 +26,7 @@ if(length(sheet_names_new)>0){
 
 
 if(nrow(cl_log_999)>0){
-  warning(paste0('detected ',nrow(cl_log_999),' ',code_for_check,' entries in your data check cl_log_999 for details'))
+  warning(paste0('detected ',nrow(cl_log_999),' c("',paste0(code_for_check,collapse = '","'),'") entries in your data check cl_log_999 for details'))
 }
 
 
