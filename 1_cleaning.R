@@ -101,7 +101,7 @@ write.xlsx(deletion.log.new, make.filename.xlsx("output/deletion_log/", "deletio
 
 # Check that cumulative and binary values in select multiple match each other
 
-cleaning.log.match <- utilityR::select.multiple.check(raw.data, tool.survey, id_col="uuid")
+cleaning.log.match <- utilityR::select.multiple.check(raw.main, tool.survey, id_col="uuid")
 
 if (nrow(cleaning.log.match) > 0) {
   write.xlsx(cleaning.log.match, "output/checking/select_multiple_match.xlsx", overwrite=T)
