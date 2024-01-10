@@ -4,6 +4,30 @@ if(name_clean_others_file != ''){
   or.edited  <- utilityR::load.requests(directory_dictionary$dir.requests, 
                                         name_clean_others_file,
                                         sheet = sheet_name_others, validate = T)  # specify Sheet2 because the first one is a readme
+
+    or.edited <- or.edited %>%
+    rowwise() %>%
+    mutate(choice_label = sapply(str_split(choice, " "), function(choice_list) {
+      for (ch in choice_list) {
+        if ((ref.name %in% tool.choices$list_name)) {
+          label <- utilityR::get.choice.label(
+            ch,
+            ref.name,
+            directory_dictionary$label_colname,
+            tool.choices)
+
+          if (!is.na(existing.v) && existing.v == label) {
+            return(label)
+          }
+        }
+        return('')
+      }
+
+    })) %>%
+    ungroup() %>%
+    mutate(existing.v = ifelse(choice_label != '', NA, existing.v),
+           invalid.v = ifelse(choice_label != '', 'yes', invalid.v)) %>%
+    select(-choice_label)
   
   if(any(or.edited$check == 1)){
     issue <- paste0('uuid: ', or.edited[or.edited$check == 1,]$uuid,', variable: ',or.edited[or.edited$check == 1,]$name)
