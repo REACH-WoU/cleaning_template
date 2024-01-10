@@ -5,9 +5,9 @@ if(name_clean_others_file != ''){
                                         name_clean_others_file,
                                         sheet = sheet_name_others, validate = T)  # specify Sheet2 because the first one is a readme
 
-    or.edited <- or.edited %>%
-    rowwise() %>%
-    mutate(choice_label = sapply(str_split(choice, " "), function(choice_list) {
+      or.edited <- or.edited %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(choice_label = sapply(stringr::str_split(choice, " "), function(choice_list) {
       for (ch in choice_list) {
         if ((ref.name %in% tool.choices$list_name)) {
           label <- utilityR::get.choice.label(
@@ -24,10 +24,10 @@ if(name_clean_others_file != ''){
       }
 
     })) %>%
-    ungroup() %>%
+    dplyr::ungroup() %>%
     mutate(existing.v = ifelse(choice_label != '', NA, existing.v),
            invalid.v = ifelse(choice_label != '', 'yes', invalid.v)) %>%
-    select(-choice_label)
+    dplyr::select(-choice_label)
   
   if(any(or.edited$check == 1)){
     issue <- paste0('uuid: ', or.edited[or.edited$check == 1,]$uuid,', variable: ',or.edited[or.edited$check == 1,]$name)
