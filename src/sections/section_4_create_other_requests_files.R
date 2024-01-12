@@ -2,7 +2,7 @@
 # get all of the other questions
 other.db <- utilityR::get.other.db(tool.choices = tool.choices,
                                    tool.survey = tool.survey,
-                                   label_colname = directory_dictionary$label_colname)
+                                   label_colname = label_colname)
 
 
 # Separate the other questions files by loop
@@ -10,27 +10,26 @@ other.db.main  <- other.db[other.db$name %in% colnames(raw.main),]
 # find _other responses in main
 other.responses <- utilityR::find.responses(raw.main, other.db.main)
 
+# same process for loops
+if(length(sheet_names_new)>0){
+  for(loop in 1:length(sheet_names_new)){
+    txt <- paste0('other.db.loop',loop,'<- other.db[other.db$name %in% colnames(raw.loop',loop,'),]')
+    eval(parse(text=txt))
+    
+    txt <- paste0(
+      'if(nrow(other.db.loop',loop,')>0){
+      other.responses.loop',loop,' <- utilityR::find.responses(raw.loop',loop,', other.db.loop',loop,', is.loop = T)
+      }else{other.responses.loop',loop,' <- data.frame()}'
+    )
+    eval(parse(text=txt))
+    
+    txt <- paste0('other.responses <- rbind(other.responses, other.responses.loop',loop,')')
+    
+    eval(parse(text=txt))
+    
+  }
+}
 
-if(exists('raw.loop1')){
-  other.db.loop1 <- other.db[other.db$name %in% colnames(raw.loop1),]
-  other.responses.loop1 <- utilityR::find.responses(raw.loop1, other.db.loop1, is.loop = T)
-  
-}else{other.responses.loop1 <- data.frame()}
-
-if(exists('raw.loop2')){
-  other.db.loop2 <- other.db[other.db$name %in% colnames(raw.loop2),]
-  other.responses.loop2 <- utilityR::find.responses(raw.loop2, other.db.loop2, is.loop = T)
-
-}else{other.responses.loop2 <- data.frame()}
-
-if(exists('raw.loop3')){
-  other.db.loop3 <- other.db[other.db$name %in% colnames(raw.loop3),]
-  other.responses.loop3 <- utilityR::find.responses(raw.loop3, other.db.loop3, is.loop = T)
-
-}else{other.responses.loop3 <- data.frame()}
-
-# bind them all together
-other.responses <- rbind(other.responses, other.responses.loop1, other.responses.loop2, other.responses.loop3)
 
 # translate your data
 other.responses.j <- utilityR::translate.responses(responses = other.responses,
@@ -45,6 +44,7 @@ utilityR::save.other.requests(utilityR::create.translate.requests(other.response
 
 # ------------------------------------------------------------------------------
 
+trans.responses <- data.frame()
 
 # translate all text questions, but skip these columns:
 trans_cols_to_skip <- c(
@@ -58,10 +58,10 @@ trans.db <- utilityR::get.trans.db(tool.choices = tool.choices,
 
 
 # if there are any variables that have text columns and are missing from trans DB - add them here
-missing_vars <- data.frame(name = c('XXXX',
-                                    'XXX'),
-                           label = c('XXXX',
-                                     'XXXX'))
+missing_vars <- data.frame(name = c('xxxx',
+                                    'xxxx'),
+                           label = c('xxxx',
+                                     'xxxx'))
 
 trans.db <- rbind(trans.db, missing_vars)
 
@@ -70,35 +70,26 @@ trans.db <- rbind(trans.db, missing_vars)
 trans.db.main <- trans.db[trans.db$name %in% colnames(raw.main),]
 trans.responses.main <- utilityR::find.responses(raw.main, trans.db.main)
 
-if(exists('raw.loop1')){
-  trans.db.loop1 <- trans.db[trans.db$name %in% colnames(raw.loop1),]
-  if(nrow(trans.db.loop1)>0){
-    trans.responses.loop1 <- utilityR::find.responses(raw.loop1, trans.db.loop1, is.loop = T)
-  }else{trans.responses.loop1 <- data.frame()}
-}else{trans.responses.loop1 <- data.frame()}
+trans.responses <- rbind(trans.responses,trans.responses.main)
 
-if(exists('raw.loop2')){
-  trans.db.loop2 <- trans.db[trans.db$name %in% colnames(raw.loop2),]
-  if(nrow(trans.db.loop2)>0){
-    trans.responses.loop2 <- utilityR::find.responses(raw.loop2, trans.db.loop2, is.loop = T)
-  }else{trans.responses.loop2 <- data.frame()}
-}else{trans.responses.loop2 <- data.frame()}
-
-
-if(exists('raw.loop3')){
-  trans.db.loop3 <- trans.db[trans.db$name %in% colnames(raw.loop3),]
-  if(nrow(trans.db.loop3)>0){
-    trans.responses.loop3 <- utilityR::find.responses(raw.loop3, trans.db.loop3, is.loop = T)
-  }else{trans.responses.loop3 <- data.frame()}
-}else{trans.responses.loop3 <- data.frame()}
-
-# bind them all together
-trans.responses <- rbind(trans.responses.main,
-                         trans.responses.loop1,
-                         trans.responses.loop2,
-                         trans.responses.loop3)
-
-rm(trans.responses.main, trans.responses.loop1, trans.responses.loop2, trans.responses.loop3)
+if(length(sheet_names_new)>0){
+  for(loop in 1:length(sheet_names_new)){
+    txt <- paste0('trans.db.loop',loop,'<- trans.db[trans.db$name %in% colnames(raw.loop',loop,'),]')
+    eval(parse(text=txt))
+    
+    txt <- paste0(
+      'if(nrow(trans.db.loop',loop,')>0){
+      trans.responses.loop',loop,' <- utilityR::find.responses(raw.loop',loop,', trans.db.loop',loop,', is.loop = T)
+      }else{trans.responses.loop',loop,' <- data.frame()}'
+    )
+    eval(parse(text=txt))
+    
+    txt <- paste0('trans.responses <- rbind(trans.responses, trans.responses.loop',loop,')')
+    
+    eval(parse(text=txt))
+    
+  }
+}
 
 # translate all of the responses
 trans.responses.j <- utilityR::translate.responses(responses = trans.responses,
