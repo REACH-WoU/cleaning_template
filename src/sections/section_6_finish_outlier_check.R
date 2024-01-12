@@ -1,21 +1,21 @@
 if(nrow(cleaning.log.outliers>0)){
   
   # apply changes to the frame
-  raw.main <- utilityR::apply.changes(raw.main,clog = raw.main.outliers,is.loop = F)
-  if(exists('raw.loop1.outliers')){
-    if(nrow(raw.loop1.outliers)>0){
-      raw.loop1 <- utilityR::apply.changes(raw.loop1,clog = raw.loop1.outliers,is.loop = T)
-    }
+  raw.main.outliers <- cleaning.log.outliers[cleaning.log.outliers$variable%in% names(raw.main),]
+  if(nrow(raw.main.outliers)){
+    raw.main <- utilityR::apply.changes(raw.main,clog = raw.main.outliers,is.loop = F)
   }
-  if(exists('raw.loop2.outliers')){
-    if(nrow(raw.loop2.outliers)>0){
-      raw.loop2 <- utilityR::apply.changes(raw.loop2,clog = raw.loop2.outliers,is.loop = T)
-    }
-  }
-  if(exists('raw.loop3.outliers')){
-    if(nrow(raw.loop3.outliers)>0){
-      raw.loop3 <- utilityR::apply.changes(raw.loop3,clog = raw.loop3.outliers,is.loop = T)
-    }
-  }
+  
+  if(length(sheet_names_new)>0){
+    for(i in sheet_names_new){
+      txt <- paste0('raw.loop',i,'.outliers <- cleaning.log.outliers[cleaning.log.outliers$variable%in% names(raw.loop',i,'),]')
+      eval(parse(text=txt))
+      
+      txt <- paste0('if(nrow(raw.loop',i,'.outliers)>0){
+      raw.loop',i,' <- utilityR::apply.changes(raw.loop',i,',clog = raw.loop',i,'.outliers,is.loop = T)
+      }')
+      eval(parse(text=txt))
+      
+    }}
   
 }
