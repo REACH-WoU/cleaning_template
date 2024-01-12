@@ -100,7 +100,6 @@ write.xlsx(deletion.log.new, make.filename.xlsx("output/deletion_log/", "deletio
 #--------------------------- Section  4 - Others and translations----------------------------------------------------
 
 
-
 # if res is empty, data doesn't consist mismatching, if res has a lot of recordings for 1 uuid - probably you have duplicates
 
 source('src/sections/section_4_create_other_requests_files.R')
@@ -130,6 +129,13 @@ if (nrow(cleaning.log.match) > 0) {
 }
 
 
+# Check that cumulative and binary values in select multiple match each other
+
+cleaning.log.match <- utilityR::select.multiple.check(raw.main, tool.survey, id_col="uuid")
+
+if (nrow(cleaning.log.match) > 0) {
+  write.xlsx(cleaning.log.match, "output/checking/select_multiple_match.xlsx", overwrite=T)
+}
 #--------------------------- Section  5 - Check for 999/99 entries----------------------------------------------------
 
 # Check if any columns are equal to '999'/'99', enter any other values you're suspicious of
