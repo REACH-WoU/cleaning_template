@@ -4,8 +4,9 @@ if(name_clean_others_file != ''){
   or.edited  <- utilityR::load.requests(directory_dictionary$dir.requests, 
                                         name_clean_others_file,
                                         sheet = sheet_name_others, validate = T)  # specify Sheet2 because the first one is a readme
-
-or.edited <- or.edited %>%
+  
+  or.edited <- or.edited %>%
+    left_join(tool.survey %>% select(name,list_name) %>% rename(ref.name=name)) %>% 
     dplyr::rowwise() %>%
     dplyr::mutate(existing.v.choice_label = sapply(stringr::str_split(choice, " "), function(choice_list) {
       if (is.na(existing.v)) {
@@ -14,23 +15,32 @@ or.edited <- or.edited %>%
       existing.v.list <- unlist(strsplit(existing.v, ";"))
       
       for (ch in choice_list) {
-        if ((ref.name %in% tool.choices$list_name)) {
-          label <- utilityR::get.choice.label(ch, ref.name,
-                               directory_dictionary$label_colname, tool.choices)
+        if ((list_name %in% tool.choices$list_name)) {
+          label <- utilityR::get.choice.label(ch, list_name,
+                                              directory_dictionary$label_colname, tool.choices)
           if ((is.element(label, existing.v.list))) {
             existing.v.list <- existing.v.list[!existing.v.list %in% label]
           }
         } else {
-          stop(paste0("The choice list ", ref.name, " does not exist in the tool.choices file"))
+          stop(paste0("The choice list ", list_name, " does not exist in the tool.choices file"))
         }
       }
       return(paste(existing.v.list, collapse = ";"))
-
     })) %>%
     dplyr::ungroup() %>%
     mutate(existing.v = ifelse(existing.v.choice_label == '', NA, existing.v.choice_label),
-           invalid.v = ifelse(existing.v.choice_label == '', 'YES', invalid.v)) %>%
+           invalid.v = ifelse(existing.v.choice_label == '', 'YES', invalid.v))
+  
+  warn <- nrow(or.edited[or.edited$existing.v.choice_label =='',])
+  
+  or.edited <- or.edited%>%
     dplyr::select(-existing.v.choice_label)
+  
+  if(warn>0){
+    warning(paste0(warn,' of the entries in the existing column of the requests file were already 
+chosen by the respondent in the cumulative column. These `other` enries will be coded
+as invalid to speed up the recoding process'))
+  }
   
   if(any(or.edited$check == 1)){
     issue <- paste0('uuid: ', or.edited[or.edited$check == 1,]$uuid,', variable: ',or.edited[or.edited$check == 1,]$name)
