@@ -1,16 +1,16 @@
 cleaning.log.outliers <- data.frame()
 
 cols.integer_main <- filter(tool.survey, type == "integer")
+# get the integer columns in main
 if (length(cols.integer_raw.main) == 0) cols.integer_raw.main <- cols.integer_main[cols.integer_main$name %in% colnames(raw.main),] %>% pull(name)
-if (length(cols.integer_raw.loop1) == 0 & exists('raw.loop1')) cols.integer_raw.loop1 <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop1),] %>% pull(name)
-if (length(cols.integer_raw.loop2) == 0 & exists('raw.loop2')) cols.integer_raw.loop2 <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop2),] %>% pull(name)
-if (length(cols.integer_raw.loop3) == 0 & exists('raw.loop3')) cols.integer_raw.loop3 <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop3),] %>% pull(name)
-
+# set up empty lists
 outliers.list <- c()
 raw.data_frames.list <- c()
 columns.list <- c()
 
+
 if (length(cols.integer_raw.main) != 0) {
+  # get the outliers
   raw.main.outliers <- utilityR::detect.outliers(
     df = raw.main,
     id = 'uuid',
@@ -19,57 +19,52 @@ if (length(cols.integer_raw.main) != 0) {
     n.sd = n.sd,
     method = method,
     ignore_0=ignore_0)
+  #bind them to the list of outliers
   outliers.list <- c(outliers.list, list(raw.main.outliers))
+  # bind the dataframe to the list to feed into the visualization function
   raw.data_frames.list <- c(raw.data_frames.list, list(raw.main))
+  # create a list of integer columns
   columns.list <- c(columns.list, list(cols.integer_raw.main))
 } else raw.main.outliers <- data.frame()
 
-if (length(cols.integer_raw.loop1) != 0) {
-  raw.loop1.outliers <- utilityR::detect.outliers(
-    df = raw.loop1,
-    id = 'loop_index',
-    colnames = cols.integer_raw.loop1,
-    is.loop = T,
-    n.sd = n.sd,
-    method = method,
-    ignore_0=ignore_0)
-  outliers.list <- c(outliers.list, list(raw.loop1.outliers))
-  raw.data_frames.list <- c(raw.data_frames.list, list(raw.loop1))
-  columns.list <- c(columns.list, list(cols.integer_raw.loop1))
-} else raw.loop1.outliers <- data.frame()
+cleaning.log.outliers <- rbind(raw.main.outliers,cleaning.log.outliers)
 
-if (length(cols.integer_raw.loop2) != 0) {
-  raw.loop2.outliers <- utilityR::detect.outliers(
-    df = raw.loop2,
-    id = 'loop_index',
-    colnames = cols.integer_raw.loop2,
-    is.loop = T,
-    n.sd = n.sd,
-    method = method,
-    ignore_0=ignore_0)
-  outliers.list <- c(outliers.list, list(raw.loop2.outliers))
-  raw.data_frames.list <- c(raw.data_frames.list, list(raw.loop2))
-  columns.list <- c(columns.list, list(cols.integer_raw.loop2))
-} else raw.loop2.outliers <- data.frame()
+# same for loops
+if(length(sheet_names_new)>0){
+  for(i in 1:length(sheet_names_new)){
+    txt <- paste0('if (length(cols.integer_raw.loop',i,') == 0){cols.integer_raw.loop',i,' <- cols.integer_main[cols.integer_main$name %in% colnames(raw.loop',i,'),] %>% pull(name)}')
+    eval(parse(text=txt))
+    
+    txt <- paste0(
+      'if (length(cols.integer_raw.loop',i,') != 0) {
+      raw.loop',i,'.outliers <- utilityR::detect.outliers(
+      df = raw.loop',i,',
+      id = "loop_index",
+      colnames = cols.integer_raw.loop',i,',
+      is.loop = T,
+      n.sd = n.sd,
+      method = method,
+      ignore_0=ignore_0)
+      outliers.list <- c(outliers.list, list(raw.loop',i,'.outliers))
+      raw.data_frames.list <- c(raw.data_frames.list, list(raw.loop',i,'))
+      columns.list <- c(columns.list, list(cols.integer_raw.loop',i,'))
+      } else raw.loop',i,'.outliers <- data.frame()'
+    )
+    eval(parse(text=txt))
+    
+    
+  }}
 
-if (length(cols.integer_raw.loop3) != 0) {
-  raw.loop3.outliers <- utilityR::detect.outliers(
-    df = raw.loop3,
-    id = 'loop_index',
-    colnames = cols.integer_raw.loop3,
-    is.loop = T,
-    n.sd = n.sd,
-    method = method,
-    ignore_0=ignore_0)
-  outliers.list <- c(outliers.list, list(raw.loop3.outliers))
-  raw.data_frames.list <- c(raw.data_frames.list, list(raw.loop3))
-  columns.list <- c(columns.list, list(cols.integer_raw.loop3))
-} else raw.loop3.outliers <- data.frame()
-
+# generate the boxplot
 utilityR::generate.boxplot(outliers.list=outliers.list,
                            raw.data_frames.list=raw.data_frames.list,
                            columns.list=columns.list,
                            n.sd=n.sd, boxplot.path = "output/checking/outliers/outlier_analysis_")
 
-cleaning.log.outliers <- rbind(raw.main.outliers,raw.loop1.outliers,raw.loop2.outliers,raw.loop3.outliers)
+# bind the cleaning logs for loops
+if(length(sheet_names_new)>0){
+  for(i in 1:length(sheet_names_new)){
+    txt <- paste0('cleaning.log.outliers <- rbind(cleaning.log.outliers,raw.loop',i,'.outliers)')
+    eval(parse(text=txt))
+  }}
 

@@ -40,7 +40,8 @@ raw.main  <- raw.main %>%
          n=cumsum(n)
   ) %>% 
   filter(n==1) %>% 
-  select(-n)
+  select(-n) %>% 
+  ungroup()
 
 if(length(sheet_names_new)>0){
   for(loop in sheet_names_new){
@@ -50,7 +51,8 @@ if(length(sheet_names_new)>0){
          n=cumsum(n)
          ) %>% 
   filter(n==1) %>% 
-  select(-n)')
+  select(-n)%>% 
+  ungroup()')
     eval(parse(text=txt))
   }
 }

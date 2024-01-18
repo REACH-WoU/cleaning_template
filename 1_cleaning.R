@@ -11,7 +11,7 @@ directory_dictionary <- list(
   dir.responses = "output/checking/responses/", # the directory of your responses to open questions
   enum_colname = "XXX", # the column that contains the enumerator ID,
   enum_comments = 'XXX', # the column that contains the enumerator's comments,
-  filename.tool = "resources/XXXX.xlsx", # the name of your Kobo tool and its path
+  filename.tool = "resources/XXX.xlsx", # the name of your Kobo tool and its path
   data_name = "XXXX.xlsx", # the name of your dataframe
   data_path = "data/inputs/kobo_export/", # the path to your dataframe
   label_colname = 'label::English', # the name of your label column. Has to be identical in Kobo survey and choices sheets
@@ -99,14 +99,6 @@ write.xlsx(deletion.log.new, make.filename.xlsx("output/deletion_log/", "deletio
 
 #--------------------------- Section  4 - Others and translations----------------------------------------------------
 
-# Check that cumulative and binary values in select multiple match each other
-
-cleaning.log.match <- utilityR::select.multiple.check(raw.data, tool.survey, id_col="uuid")
-
-if (nrow(cleaning.log.match) > 0) {
-  write.xlsx(cleaning.log.match, "output/checking/select_multiple_match.xlsx", overwrite=T)
-}
-
 
 # if res is empty, data doesn't consist mismatching, if res has a lot of recordings for 1 uuid - probably you have duplicates
 
@@ -128,6 +120,22 @@ vars_to_omit <- c('settlement', directory_dictionary$enum_colname, directory_dic
 
 source('src/sections/section_4_post_check_for_leftover_cyrillic.R')
 
+# Check that cumulative and binary values in select multiple match each other
+
+cleaning.log.match <- utilityR::select.multiple.check(raw.main, tool.survey, id_col="uuid")
+
+if (nrow(cleaning.log.match) > 0) {
+  write.xlsx(cleaning.log.match, "output/checking/select_multiple_match.xlsx", overwrite=T)
+}
+
+
+# Check that cumulative and binary values in select multiple match each other
+
+cleaning.log.match <- utilityR::select.multiple.check(raw.main, tool.survey, id_col="uuid")
+
+if (nrow(cleaning.log.match) > 0) {
+  write.xlsx(cleaning.log.match, "output/checking/select_multiple_match.xlsx", overwrite=T)
+}
 #--------------------------- Section  5 - Check for 999/99 entries----------------------------------------------------
 
 # Check if any columns are equal to '999'/'99', enter any other values you're suspicious of
@@ -191,7 +199,7 @@ source('src/sections/section_6_finish_outlier_check.R')
 cleaning.log <- rbind(cleaning.log,cleaning.log.outliers)
 
 
-# ----------------------------------Section 7 - Remove PII columns, apply any last changes, then save cleaned dataset--------------------------------
+# ----------------------------------Section 7 - Remove PII columns, apply any last changes, then save cleaned dataset--------------
 
 # finalize cleaning log:
 cleaning.log <- cleaning.log %>% distinct() %>%
