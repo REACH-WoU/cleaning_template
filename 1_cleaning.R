@@ -95,6 +95,8 @@ source('src/sections/section_2_run_audit_decisions.R')
 
 source('src/sections/section_3_loops_and_spatial_checks.R')
 
+# duplicates are merged only prior to writing the file.
+deletion.log.new <- rbind(deletion.log.dupl,deletion.log.new)
 write.xlsx(deletion.log.new, make.filename.xlsx("output/deletion_log/", "deletion_log", no_date = T), overwrite=T)
 
 #--------------------------- Section  4 - Others and translations----------------------------------------------------
