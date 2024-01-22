@@ -228,6 +228,7 @@ as invalid to speed up the recoding process'))
       relevancy_dictionary = relevancy_dictionary,
       is.loop = F)
     
+    
     cleaning.log.other.main <- rbind(cleaning.log.other.main,cleaning.log.other.main.relevances)
     
     if(exists('raw.loop1_requests')){
