@@ -124,6 +124,7 @@ as invalid to speed up the recoding process'))
       or.edited = raw.main_requests_elsewhere,
       tool.survey = tool.survey,
       is.loop = F)
+    
   }else{cleaning.log.other.main.elsewhere <- data.frame()}
   
   cleaning.log.other.main <- rbind(cleaning.log.other.main,cleaning.log.other.main.elsewhere)
@@ -148,6 +149,7 @@ as invalid to speed up the recoding process'))
         or.edited = raw.loop1_requests_elsewhere,
         tool.survey = tool.survey,
         is.loop = F)
+      
     }else{cleaning.log.other.loop1.elsewhere <- data.frame()}
     
     cleaning.log.other.loop1 <- rbind(cleaning.log.other.loop1,cleaning.log.other.loop1.elsewhere)
@@ -174,6 +176,7 @@ as invalid to speed up the recoding process'))
         or.edited = raw.loop2_requests_elsewhere,
         tool.survey = tool.survey,
         is.loop = F)
+      
     }else{cleaning.log.other.loop2.elsewhere <- data.frame()}
     
     cleaning.log.other.loop2 <- rbind(cleaning.log.other.loop2,cleaning.log.other.loop2.elsewhere)
@@ -200,6 +203,7 @@ as invalid to speed up the recoding process'))
         or.edited = raw.loop3_requests_elsewhere,
         tool.survey = tool.survey,
         is.loop = F)
+      
     }else{cleaning.log.other.loop3.elsewhere <- data.frame()}
     
     cleaning.log.other.loop3 <- rbind(cleaning.log.other.loop3,cleaning.log.other.loop3.elsewhere)
