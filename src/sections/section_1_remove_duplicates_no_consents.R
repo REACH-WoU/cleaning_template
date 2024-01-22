@@ -24,7 +24,7 @@ if(length(sheet_names_new)>0){
   group_by(uuid) %>% 
   mutate(n=1,
          n=cumsum(n)) %>% 
-  filter(!n>1) %>% 
+  filter(n>1) %>% 
   select(-n) %>% 
   left_join(',loop,' %>% select(uuid,parent_index, loop_index)) %>% 
   pull(loop_index)')

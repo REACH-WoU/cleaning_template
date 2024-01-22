@@ -48,8 +48,6 @@ if(nrow(survey_durations_check) > 0){
 
 ## Soft duplicates (less than 5 different columns?)
 
-min_num_diff_questions <- 5
-
 print("Checking for soft duplicates in data grouped by enumerators...")
 # if you don't really need to have boxplot with the statistics of enumerators, you can set visualise=F
 res.soft_duplicates <- utilityR::find.similar.surveys(raw.main, tool.survey, uuid = "uuid", enum.column=directory_dictionary$enum_colname)

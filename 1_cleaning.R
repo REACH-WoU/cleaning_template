@@ -11,7 +11,7 @@ directory_dictionary <- list(
   dir.responses = "output/checking/responses/", # the directory of your responses to open questions
   enum_colname = "XXX", # the column that contains the enumerator ID,
   enum_comments = 'XXX', # the column that contains the enumerator's comments,
-  filename.tool = "resources/XXX.xlsx", # the name of your Kobo tool and its path
+  filename.tool = "resources/MSNA_2023_Questionnaire_Final_CATI_cleaned.xlsx", # the name of your Kobo tool and its path
   data_name = "XXXX.xlsx", # the name of your dataframe
   data_path = "data/inputs/kobo_export/", # the path to your dataframe
   label_colname = 'label::English', # the name of your label column. Has to be identical in Kobo survey and choices sheets
@@ -92,6 +92,9 @@ source('src/sections/section_2_run_audit_checks.R')
 source('src/sections/section_2_run_audit_decisions.R')
 
 # --------------------------------Section  3  - Loop inconsitencies + spatial checks -----------------------------------
+
+#specify the column that holds the cordinates
+geo_column <- ''
 
 source('src/sections/section_3_loops_and_spatial_checks.R')
 
