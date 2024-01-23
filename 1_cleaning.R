@@ -11,7 +11,7 @@ directory_dictionary <- list(
   dir.responses = "output/checking/responses/", # the directory of your responses to open questions
   enum_colname = "XXX", # the column that contains the enumerator ID,
   enum_comments = 'XXX', # the column that contains the enumerator's comments,
-  filename.tool = "resources/MSNA_2023_Questionnaire_Final_CATI_cleaned.xlsx", # the name of your Kobo tool and its path
+  filename.tool = "resources/xxx.xlsx", # the name of your Kobo tool and its path
   data_name = "XXXX.xlsx", # the name of your dataframe
   data_path = "data/inputs/kobo_export/", # the path to your dataframe
   label_colname = 'label::English', # the name of your label column. Has to be identical in Kobo survey and choices sheets
@@ -139,7 +139,6 @@ if (nrow(cleaning.log.match) > 0) {
   write.xlsx(cleaning.log.match, "output/checking/select_multiple_match.xlsx", overwrite=T)
 }
 
-
 # Check that cumulative and binary values in select multiple match each other
 
 cleaning.log.match <- utilityR::select.multiple.check(raw.main, tool.survey, id_col="uuid")
@@ -157,10 +156,12 @@ source('src/sections/section_5_create_999_checks.R')
 
 print(cl_log_999)
 
-# if Anything got into cl_log_999, check it. If you want to delete it from your data run the command below
+# if Anything got into cl_log_999, check it in the excel file and remove the entries that you think are fine.
+# If you want to delete it from your data run the command below
 # set apply_999_changes to 'Yes' if you want to remove the entries from code_for_check
-apply_999_changes <- 'No'
 
+apply_999_changes <- 'Yes'
+cl_log_999 <- readxl::read_excel("output/checking/999_diferences.xlsx") %>% select(-!!sym(directory_dictionary$enum_colname))
 source('src/sections/section_5_finish_999_checks.R')
 
 # ----------------------------------Section L - Your logic checks go here--------------------------------
