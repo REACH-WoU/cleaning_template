@@ -98,6 +98,12 @@ geo_column <- ''
 
 source('src/sections/section_3_loops_and_spatial_checks.R')
 
+# once you've checked all entries in the "output/checking/audit/geospatial_check"  and only left what needs to be deleted
+# implement the decisions below
+source('src/sections/section_3_spatial_decisions.R')
+
+
+
 # duplicates are merged only prior to writing the file.
 deletion.log.new <- rbind(deletion.log.dupl,deletion.log.new)
 write.xlsx(deletion.log.new, make.filename.xlsx("output/deletion_log/", "deletion_log", no_date = T), overwrite=T)
