@@ -50,7 +50,8 @@ raw.main  <- raw.main %>%
          n=cumsum(n)
   ) %>% 
   filter(n==1) %>% 
-  select(-n)
+  select(-n) %>% 
+  ungroup()
 
 ## run this to remove duplicates from looops##
 
@@ -110,7 +111,7 @@ deletion.log.test_submission <- test_submission %>% utilityR::create.deletion.lo
   deletion.log.test_submission = data.frame()
 }
 
-deletion.log.new <- rbind(deletion.log.new, deletion.log.test_submission,deletion.log.no_consents)
+deletion.log.new <- rbind(deletion.log.new, deletion.log.test_submission)
 
 ####################################################
 ## run this to remove duplicates and no-consents  ##

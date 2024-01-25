@@ -3,15 +3,15 @@ rm(list = ls())
 
 
 directory_dictionary <- list(
-  research_cycle_name = 'xxxx',
-  round = 'xxxx',
+  research_cycle_name = 'XXX',
+  round = 'XXX',
   dir.audits = "data/inputs/audits/reach/", # The directory to your audit files
   dir.audits.check = "output/checking/audit/",# The directory to your audit summary files (you'll be checking these)
   dir.requests = "output/checking/requests/", # the directory of your other_requests file
   dir.responses = "output/checking/responses/", # the directory of your responses to open questions
   enum_colname = "XXX", # the column that contains the enumerator ID,
   enum_comments = 'XXX', # the column that contains the enumerator's comments,
-  filename.tool = "resources/xxx.xlsx", # the name of your Kobo tool and its path
+  filename.tool = "resources/XXX.xlsx", # the name of your Kobo tool and its path
   data_name = "XXXX.xlsx", # the name of your dataframe
   data_path = "data/inputs/kobo_export/", # the path to your dataframe
   label_colname = 'label::English', # the name of your label column. Has to be identical in Kobo survey and choices sheets
@@ -74,11 +74,11 @@ source('src/sections/section_1_remove_duplicates_no_consents.R')
 
 
 # --------------------------------Section  2  - Audit checks + soft duplicates -----------------------------------
-min_duration_interview <- 5 # minimum duration of an interview (screen time in minutes)
+min_duration_interview <- 15 # minimum duration of an interview (screen time in minutes)
 max_duration_interview <- 60 # maximum duration of an interview (screen time in minutes)
 pre_process_audit_files <- F # whether cases of respondent taking too long to answer 1 question should cleaned.
 # if pre_process_audit_files =T, enter the maximum time that  the respondent can spend answering 1 question (in minutes)
-max_length_answer_1_question <- 20
+max_length_answer_1_question <- 10
 # Used during the check for soft duplicates.
 # The minimum number of different columns that makes us confident that the entry is not a soft duplicate
 min_num_diff_questions <- 8
@@ -94,7 +94,7 @@ source('src/sections/section_2_run_audit_decisions.R')
 # --------------------------------Section  3  - Loop inconsitencies + spatial checks -----------------------------------
 
 #specify the column that holds the cordinates
-geo_column <- ''
+geo_column <- 'geo_point'
 
 source('src/sections/section_3_loops_and_spatial_checks.R')
 
@@ -103,23 +103,21 @@ source('src/sections/section_3_loops_and_spatial_checks.R')
 source('src/sections/section_3_spatial_decisions.R')
 
 
-
 # duplicates are merged only prior to writing the file.
-deletion.log.new <- rbind(deletion.log.dupl,deletion.log.new)
+deletion.log.new <- bind_rows(deletion.log.dupl,deletion.log.new)
 write.xlsx(deletion.log.new, make.filename.xlsx("output/deletion_log/", "deletion_log", no_date = T), overwrite=T)
 
 #--------------------------- Section  4 - Others and translations----------------------------------------------------
-
 
 # if res is empty, data doesn't consist mismatching, if res has a lot of recordings for 1 uuid - probably you have duplicates
 
 source('src/sections/section_4_create_other_requests_files.R')
 
 # name that hosts the clean recode.others file, leave as '' if you don't have this file. Nothing will be recoded that way
-name_clean_others_file <- 'XXX'
+name_clean_others_file <- 'XXXX'
 sheet_name_others <- 'Sheet2' # name of the sheet where you're holding your requests
 # name that hosts the clean translation requests file, leave as '' if you don't have this file. Nothing will be recoded that way
-name_clean_trans_file <- 'XXX'
+name_clean_trans_file <- ''
 
 
 source('src/sections/section_4_apply_changes_to_requests.R')
@@ -127,17 +125,10 @@ source('src/sections/section_4_apply_changes_to_requests.R')
 # Check if your data still has any cyrillic entries
 
 # variables that will be omitted from the analysis
-vars_to_omit <- c('settlement', directory_dictionary$enum_colname, directory_dictionary$enum_comments) # add more names as needed
+vars_to_omit <- c('settlement', 'L_8_aid_providers_information_other','M_3_phone_number_name',
+                  directory_dictionary$enum_colname, directory_dictionary$enum_comments) # add more names as needed
 
-source('src/sections/section_4_post_check_for_leftover_cyrillic.R')
-
-# Check that cumulative and binary values in select multiple match each other
-
-cleaning.log.match <- utilityR::select.multiple.check(raw.main, tool.survey, id_col="uuid")
-
-if (nrow(cleaning.log.match) > 0) {
-  write.xlsx(cleaning.log.match, "output/checking/select_multiple_match.xlsx", overwrite=T)
-}
+source('src/sections/section_4_post_check_for_leftover_non_eng.R')
 
 # Check that cumulative and binary values in select multiple match each other
 
@@ -146,11 +137,12 @@ cleaning.log.match <- utilityR::select.multiple.check(raw.main, tool.survey, id_
 if (nrow(cleaning.log.match) > 0) {
   write.xlsx(cleaning.log.match, "output/checking/select_multiple_match.xlsx", overwrite=T)
 }
+
 #--------------------------- Section  5 - Check for 999/99 entries----------------------------------------------------
 
 # Check if any columns are equal to '999'/'99', enter any other values you're suspicious of
 
-code_for_check  <- c('99','999')
+code_for_check  <- c('99','999','998')
 
 source('src/sections/section_5_create_999_checks.R')
 
@@ -215,7 +207,7 @@ cleaning.log <- rbind(cleaning.log,cleaning.log.outliers)
 
 # finalize cleaning log:
 cleaning.log <- cleaning.log %>% distinct() %>%
-  filter(old.value %!=na% new.value) %>% left_join(raw.main %>% select(uuid, any_of(directory_dictionary$enum_colname)))
+  filter(old.value %not=na% new.value) %>% left_join(raw.main %>% select(uuid, any_of(directory_dictionary$enum_colname)))
 
 if (length(list.files(make.filename.xlsx("output/cleaning_log", "cleaning_log", no_date = T))) > 0) {
   cleaning.log.previous <- read_xlsx(make.filename.xlsx("output/cleaning_log", "cleaning_log"))
