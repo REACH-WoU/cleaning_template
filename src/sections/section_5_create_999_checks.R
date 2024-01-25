@@ -20,10 +20,10 @@ if(length(sheet_names_new)>0){
     eval(parse(text=txt))
     txt <- paste0('if(length(int_cols_loop',i,')>0){
     cl_log_999_loop',i,' <- utilityR::recode.set.NA.if(raw.loop',i,',int_cols_loop',i,', code = code_for_check,issue = "Wrong entry") %>% 
-  left_join(raw.main %>% select(uuid,!!sym(directory_dictionary$enum_colname)))}')
+  left_join(raw.main %>% select(uuid,!!sym(directory_dictionary$enum_colname)))
+                  bind_rows(cl_log_999,cl_log_999_loop',i,')}')
     eval(parse(text=txt))
-    txt <- paste0('bind_rows(cl_log_999,cl_log_999_loop',i,')')
-    cl_log_999 <- eval(parse(text=txt))
+
   }
 }
 

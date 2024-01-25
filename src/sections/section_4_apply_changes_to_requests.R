@@ -101,21 +101,21 @@ as invalid to speed up the recoding process'))
     }
   }
   
-  
+
   # If you face any weird double spaces
-  tool.choices$`label::English`=str_squish(tool.choices$`label::English`)
+   tool.choices$`label::English`=str_squish(tool.choices$`label::English`)
   
   # Create a cleaning log file for each loop if there's a need for it.
   cleaning.log.other.main <- utilityR::recode.others(
     data = raw.main,
     or.edited = raw.main_requests,
-    orig_response_col = 'responses',
+    orig_response_col = 'response.uk',
     is.loop = F,
     tool.choices = tool.choices,
     tool.survey = tool.survey)
   
   # Recode elsewhere functionality
-  if(nrow(raw.main_requests[[!is.na(true_elsewhere)]])>0){
+  if(nrow(raw.main_requests[!is.na(raw.main_requests$true_elsewhere),])>0){
     
     raw.main_requests_elsewhere <- raw.main_requests[!is.na(raw.main_requests$true_elsewhere),]
     
@@ -134,13 +134,13 @@ as invalid to speed up the recoding process'))
     cleaning.log.other.loop1 <- utilityR::recode.others(
       data = raw.loop1,
       or.edited = raw.loop1_requests,
-      orig_response_col = 'responses',
+      orig_response_col = 'response.uk',
       is.loop = T,
       tool.choices = tool.choices,
       tool.survey = tool.survey)
     
     # Recode elsewhere functionality
-    if(nrow(raw.loop1_requests[[!is.na(true_elsewhere)]])>0){
+    if(nrow(raw.loop1_requests[!is.na(raw.loop1_requests$true_elsewhere),])>0){
       
       raw.loop1_requests_elsewhere <- raw.loop1_requests[!is.na(raw.loop1_requests$true_elsewhere),]
       
@@ -148,7 +148,7 @@ as invalid to speed up the recoding process'))
         data= raw.loop1,
         or.edited = raw.loop1_requests_elsewhere,
         tool.survey = tool.survey,
-        is.loop = F)
+        is.loop = T)
       
     }else{cleaning.log.other.loop1.elsewhere <- data.frame()}
     
@@ -161,13 +161,13 @@ as invalid to speed up the recoding process'))
     cleaning.log.other.loop2 <- utilityR::recode.others(
       data = raw.loop2,
       or.edited = raw.loop2_requests,
-      orig_response_col = 'responses',
+      orig_response_col = 'response.uk',
       is.loop = T,
       tool.choices = tool.choices,
       tool.survey = tool.survey)
     
     # Recode elsewhere functionality
-    if(nrow(raw.loop2_requests[[!is.na(true_elsewhere)]])>0){
+    if(nrow(raw.loop2_requests[!is.na(raw.loop2_requests$true_elsewhere),])>0){
       
       raw.loop2_requests_elsewhere <- raw.loop2_requests[!is.na(raw.loop2_requests$true_elsewhere),]
       
@@ -175,7 +175,7 @@ as invalid to speed up the recoding process'))
         data= raw.loop2,
         or.edited = raw.loop2_requests_elsewhere,
         tool.survey = tool.survey,
-        is.loop = F)
+        is.loop = T)
       
     }else{cleaning.log.other.loop2.elsewhere <- data.frame()}
     
@@ -188,13 +188,13 @@ as invalid to speed up the recoding process'))
     cleaning.log.other.loop3 <- utilityR::recode.others(
       data = raw.loop3,
       or.edited = raw.loop3_requests,
-      orig_response_col = 'responses',
+      orig_response_col = 'response.uk',
       is.loop = T,
       tool.choices = tool.choices,
       tool.survey = tool.survey)
     
     # Recode elsewhere functionality
-    if(nrow(raw.loop3_requests[[!is.na(true_elsewhere)]])>0){
+    if(nrow(raw.loop3_requests[!is.na(raw.loop3_requests$true_elsewhere),])>0){
       
       raw.loop3_requests_elsewhere <- raw.loop3_requests[!is.na(raw.loop3_requests$true_elsewhere),]
       
@@ -202,7 +202,7 @@ as invalid to speed up the recoding process'))
         data= raw.loop3,
         or.edited = raw.loop3_requests_elsewhere,
         tool.survey = tool.survey,
-        is.loop = F)
+        is.loop = T)
       
     }else{cleaning.log.other.loop3.elsewhere <- data.frame()}
     
@@ -210,10 +210,10 @@ as invalid to speed up the recoding process'))
     
   }else{cleaning.log.other.loop3 <- data.frame()}
   
-  # Recode followup relevancies ----------------------
+--------------------# Recode followup relevancies ----------------------
   
   # these are the variables that have the relevancies related to their _other responses
-  select_multiple_list_relevancies <- c() 
+  select_multiple_list_relevancies <- c('I_1_income_sources') 
   
   if(length(select_multiple_list_relevancies)>0){
     # get the dictionary of the relevancies
@@ -290,7 +290,7 @@ as invalid to speed up the recoding process'))
   cleaning.log <- cleaning.log %>% select(-uniqui)
 }
 
-### Add translation cleaning if needed. ------------------------------ 
+### ----------------------Add translation cleaning if needed. ------------------------------ 
 
 if(name_clean_trans_file!= ''){
   

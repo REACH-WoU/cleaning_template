@@ -23,7 +23,7 @@ if(nrow(audits) == 0) {
 
 # get the additional data from the main df
 data.audit <- raw.main %>%
-  mutate(duration_mins = difftime(end, start, units = 'mins'),
+  dplyr::mutate(duration_mins = difftime(end, start, units = 'mins'),
          num_NA_cols = rowSums(is.na(raw.main)),
          num_dk_cols = rowSums(select(., matches("dk_undec")), na.rm = T),
          num_other_cols = rowSums(!is.na(raw.main[str_ends(colnames(raw.main), "_other")]), na.rm = T)) %>%

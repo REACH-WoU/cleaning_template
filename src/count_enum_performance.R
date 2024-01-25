@@ -13,8 +13,9 @@ logbook <- cleaning.log %>%
   mutate(type_of_issue = NA,
          changed = 'Yes',
          feedback=NA) %>% 
-  select(uuid, enumerator_id,deviceid,variable,issue, type_of_issue,feedback,changed,old.value, new.value) %>% 
-  tibble()
+  select(uuid, !!sym(directory_dictionary$enum_colname),deviceid,variable,issue, type_of_issue,feedback,changed,old.value, new.value) %>% 
+  tibble() %>% 
+  distinct()
 
 
 del_log <- deletion.log.new %>% 
@@ -23,7 +24,8 @@ del_log <- deletion.log.new %>%
               distinct()) %>% 
   select(uuid,all_of(directory_dictionary$enum_colname),deviceid,reason) %>% 
   mutate(type_of_issue = NA,
-         feedback = 'deleted')
+         feedback = 'deleted') %>% 
+  distinct()
   
 
 submission_file <- list(
