@@ -35,8 +35,8 @@ submission_file <- list(
   'del_log'=del_log
 )
 
-write.xlsx(submission_file, make.filename.xlsx("output/enum_performance", "Enumerator_performance_temp"), overwrite = T,
+write.xlsx(submission_file, make.filename.xlsx("output/Cleaning_logbook", "Cleaning_logbook"), overwrite = T,
            zoom = 90, firstRow = T)
 
 
-cat("\n> Done. Created 1 file in output/enum_performance.")
+cat("\n> Done. Created 1 file in output/Cleaning_logbook.")

@@ -185,8 +185,6 @@ cols.integer_raw.loop3 <- c()
 
 source('src/sections/section_6_detect_and_visualise_outliers.R')
 
-write.xlsx(cleaning.log.outliers, paste0("output/checking/outliers/outlier_analysis_", n.sd, "sd.xlsx"), overwrite=T)
-
 
 #------------------------------------------------------------------------------------------------------------
 # --> edit the file
@@ -196,11 +194,14 @@ write.xlsx(cleaning.log.outliers, paste0("output/checking/outliers/outlier_analy
 
 # RUN ONLY IF Anything need to be changed
 
-cleaning.log.outliers <- read.xlsx(paste0("output/checking/outliers/outlier_analysis_", n.sd, "sd.xlsx"))
+cleaning.log.outliers <- read.xlsx(paste0("output/checking/outliers/outlier_analysis_", n.sd, "sd.xlsx"),
+                                   sheet = 1)
+
+cleaning.log.outliers <- cleaning.log.outliers %>% filter(checked%==%'value corrected')
 
 source('src/sections/section_6_finish_outlier_check.R')
 
-cleaning.log <- rbind(cleaning.log,cleaning.log.outliers)
+cleaning.log <- bind_rows(cleaning.log,cleaning.log.outliers)
 
 
 # ----------------------------------Section 7 - Remove PII columns, apply any last changes, then save cleaned dataset--------------
@@ -266,7 +267,7 @@ eval(parse(text= txt))
 write.xlsx(datasheets_anon, make.filename.xlsx("output/final", "final_anonymized_data"), overwrite = T,
            zoom = 90, firstRow = T)
 
-source("src/count_enum_performance.R")
+source("src/Cleaning_logbook.R")
 source("package4validation.R")
 
 cat("\nD O N E\n")
