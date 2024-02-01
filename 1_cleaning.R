@@ -125,7 +125,7 @@ source('src/sections/section_4_apply_changes_to_requests.R')
 # Check if your data still has any  non-english entries
 
 # variables that will be omitted from the analysis
-vars_to_omit <- c('settlement', 
+vars_to_omit <- c('settlement',
                   directory_dictionary$enum_colname, directory_dictionary$enum_comments) # add more names as needed
 
 source('src/sections/section_4_post_check_for_leftover_non_eng.R')
@@ -187,21 +187,27 @@ source('src/sections/section_6_detect_and_visualise_outliers.R')
 
 
 #------------------------------------------------------------------------------------------------------------
-# --> edit the file
-# --> Manually check outliers and change to NA (Decision made with country FPS)
-# --> save new file as outliers_responses_edited.xlsx in output/checking/responses/
+# Edit the file
+# Manually check outliers and set the value of the `checked` column.
+# If the entry within the `cleaning.log.outliers` works for you, set the `checked`
+# column value to `value checked`, if you want to change the old value to the new one,
+# specify it within the `new.value` column and set the `checked` column value to `value corrected`.
+#
+# Save your changes in the same file or create a new file in output/checking/responses/ and
+# change the path in the `cleaning.log.outliers` below
+
 #------------------------------------------------------------------------------------------------------------
 
 # RUN ONLY IF Anything need to be changed
 
-cleaning.log.outliers <- read.xlsx(paste0("output/checking/outliers/outlier_analysis_", n.sd, "sd.xlsx"),
-                                   sheet = 1)
+cleaning.log.outliers_full <- read.xlsx(paste0("output/checking/outliers/outlier_analysis_", n.sd, "sd.xlsx"),
+                                        sheet = 1)
 
-cleaning.log.outliers <- cleaning.log.outliers %>% filter(checked%==%'value corrected')
+cleaning.log.outliers <- cleaning.log.outliers_full %>% filter(checked%==%'value corrected')
 
 source('src/sections/section_6_finish_outlier_check.R')
 
-cleaning.log <- bind_rows(cleaning.log,cleaning.log.outliers)
+cleaning.log <- bind_rows(cleaning.log,cleaning.log.outliers_full)
 
 
 # ----------------------------------Section 7 - Remove PII columns, apply any last changes, then save cleaned dataset--------------
