@@ -52,8 +52,6 @@ if(length(sheet_names_new)>0){
 }
 
 
-# If there were any changes in the tool during data collection, they can be run here
-source('src/sections/tool_modification.R')
 
 
 # select the columns in your data that contain date elements
@@ -66,6 +64,8 @@ raw.main <- raw.main %>%
 
 rm(date_cols_main)
 
+# If there were any changes in the tool during data collection, they can be run here
+source('src/sections/tool_modification.R')
 
 
 # --------------------------------Section  1  - Remove duplicates and No consent entries -----------------------------------
