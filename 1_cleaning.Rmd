@@ -146,7 +146,7 @@ The section below is better run if you open up the file and run the script line 
 
 ```{r Section  4 - Others and translations - recoding}
 # name that hosts the clean recode.others file, leave as '' if you don't have this file. Nothing will be recoded that way
-name_clean_others_file <- 'XXX'
+name_clean_others_file <- 'UKR2308_MSNA_other_response_230802'
 sheet_name_others <- 'Sheet2' # name of the sheet where you're holding your requests
 # name that hosts the clean translation requests file, leave as '' if you don't have this file. Nothing will be recoded that way
 name_clean_trans_file <- 'XXX'
@@ -198,7 +198,7 @@ cleaning.log.checks.direct <- tibble()
 ```
 
 Outlier checks will require you to set some parameters prior to running the algorithm. Check the documentation on `detect.outliers` to find more details.
-```{Section 6 - Check for outliers}
+```{r Section 6 - Check for outliers}
 # specify the number of standard deviations you want to use
 n.sd <- 3
 
