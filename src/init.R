@@ -3,7 +3,7 @@
 # loading all packages, functions and the Kobo tool
 if (!require("pacman")) install.packages("pacman")
 
-devtools::install_github('https://github.com/Nestor-Ch/utilityR', build_vignettes = T)
+devtools::install_github('https://github.com/REACH-WoU/utilityR', build_vignettes = T)
 devtools::install_github('https://github.com/REACH-WoU-Regional/translateR', build_vignettes = T)
 
 
