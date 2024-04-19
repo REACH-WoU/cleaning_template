@@ -8,7 +8,7 @@ devtools::install_github('https://github.com/REACH-WoU-Regional/translateR', bui
 
 
 pacman::p_load(docstring, tidyverse, readxl, writexl, openxlsx, stringr, 
-               sf, geosphere, qdapRegex, cluster, randomcoloR, svDialogs, scales, janitor, utilityR,zip)
+               sf, geosphere, qdapRegex, cluster, randomcoloR, svDialogs, scales, janitor, utilityR,zip,geosphere)
 
 
 make.short.name <- function(name, no_date = F){

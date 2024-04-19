@@ -124,4 +124,4 @@ cat("Check outliers of enumerators surveys group in output/checking/outliers/enu
 cat("Also, you can find analysis of the enumerators in analysis data frame, and outliers in outliers data frame.
       If you want to check data without analysis, res.soft_duplicates for you. You can do different manipulations by yourself")
 
-rm(audits, data.audit, analysis.result)
+rm(data.audit, analysis.result)
