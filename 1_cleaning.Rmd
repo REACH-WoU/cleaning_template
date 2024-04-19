@@ -113,10 +113,9 @@ Once you've checked all entries in the files in "output/checking/audit/" directo
 source('src/sections/section_2_run_audit_decisions.R')
 ```
 
-The section below is deprecated and rarely used. We're keeping it in case it comes in handy sometime in the future
+The section below is dedicated to all geospatial checks that can be run on the data.
 
 ```{r Section  3  - Loop inconsitencies + spatial checks}
-#specify the column that holds the cordinates 
 
 # audit geospatial check block------------------------------
 use_audit <- T # if using audit checks for geospatial checking. Set to false if not doing geospatial check from audits
@@ -134,6 +133,7 @@ polygon_file_merge_column <-'admin4Pcode' # what is the name of the column that 
 merge_column <- 'settlement' # what is the name of the column that signifies the name of the polygon in your dataframe? Leave blank if not using
 # end of audit geospatial check block------------------------------
 
+#specify the column that holds the cordinates 
 geo_column <- 'geo_point' # the name of the column that holds your coordinates (in the data). Leave blank if not using
 
 source('src/sections/section_3_loops_and_spatial_checks.R')
@@ -202,8 +202,6 @@ if (nrow(cleaning.log.match) > 0) {
 }
 
 source('src/sections/section_4_check_binaries.R')
-
-
 
 ```
 
@@ -318,7 +316,7 @@ if(length(ls)>1){
   ls_loops <- ls[2:length(ls)]
 }else{ls_loops <- c()}
 
-
+# remove empty columns from loops
 if(length(ls_loops)>0){
   for(loop in ls_loops){
     txt <- paste0("empty_cols <- apply(",loop,",2,function(x){all(is.na(x))}) %>% 
