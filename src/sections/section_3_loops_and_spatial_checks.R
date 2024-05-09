@@ -214,6 +214,8 @@ if(use_audit==T){
   if( !exists('audits')){
     audits <- utilityR::load.audit.files(directory_dictionary$dir.audits, uuids = raw.main$uuid, track.changes = F)
   }
+  audits <- audits[audits$uuid %in% raw.main$uuid,]
+  
   
   if(omit_locations){
     ids_to_omit <- raw.main %>% filter(!!sym(location_column)%in% location_ids) %>% pull(uuid)
