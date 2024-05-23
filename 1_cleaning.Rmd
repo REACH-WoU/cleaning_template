@@ -161,6 +161,13 @@ trans_cols_to_skip <- c(
   # add columns to skip
   "enum_comms"
 )
+other_request_file_name <- "other_requests_final"
+text_request_file_name <- "text_requests_final"
+
+# if you clean your data during the round of their collection, each time adding new samples
+partial_clean <- FALSE
+other_request_file_pattern <- "other_requests_"
+text_request_file_pattern <- "text_requests_"
 
 source('src/sections/section_4_create_other_requests_files.R')
 
