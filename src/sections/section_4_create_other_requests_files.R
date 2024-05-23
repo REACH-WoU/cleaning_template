@@ -100,7 +100,7 @@ if(nrow(trans.responses)>0){
   if (partial_clean) {
     existed.requests  <- utilityR::load.requests(directory_dictionary$dir.requests,
                                                  text_request_file_pattern,
-                                                 sheet = sheet_name_others, validate = T)
+                                                 sheet = sheet_name_others, validate = F)
     # remove from other.responses.j where uuid in or.edited$uuid
     trans.responses <- trans.responses[!trans.responses$uuid %in% existed.requests$uuid,]
   }

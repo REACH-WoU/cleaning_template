@@ -161,16 +161,21 @@ trans_cols_to_skip <- c(
   # add columns to skip
   "enum_comms"
 )
+
+sheet_name_others <- 'Sheet2'
+
 other_request_file_name <- "other_requests_final"
 text_request_file_name <- "text_requests_final"
 
 # if you clean your data during the round of their collection, each time adding new samples
 partial_clean <- FALSE
-other_request_file_pattern <- "other_requests_"
-text_request_file_pattern <- "text_requests_"
+other_request_file_pattern <- paste(directory_dictionary$research_cycle_name,
+                                    directory_dictionary$round, "other_requests", sep = "_")
+
+text_request_file_pattern <- paste(directory_dictionary$research_cycle_name,
+                                   directory_dictionary$round, "text_requests_", sep = "_")
 
 source('src/sections/section_4_create_other_requests_files.R')
-
 # If you see that columns were missed from the translation. Please go into the `section_4_create_other_requests_files.R` script and tweak `missing_vars` object if something was missed from the `text` columns or `other.db` if something is missing from the `_other` columns.
 ```
 
