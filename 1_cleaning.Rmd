@@ -164,8 +164,8 @@ trans_cols_to_skip <- c(
 
 sheet_name_others <- 'Sheet2'
 
-other_request_file_name <- "other_requests_final"
-text_request_file_name <- "text_requests_final"
+other_request_file_sufix <- "other_requests_final"
+text_request_file_sufix <- "text_requests_final"
 
 # if you clean your data during the round of their collection, each time adding new samples
 partial_clean <- FALSE

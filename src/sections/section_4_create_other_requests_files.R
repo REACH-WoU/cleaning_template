@@ -49,7 +49,7 @@ if(nrow(other.responses)>0){
   
   utilityR::save.other.requests(utilityR::create.translate.requests(other.responses.j),
                                 directory = directory_dictionary$dir.requests,
-                                make.short.name(other_request_file_name), use_template = F)
+                                make.short.name(other_request_file_sufix), use_template = F)
 }
 
 # ------------------------------------------------------------------------------
@@ -113,6 +113,6 @@ if(nrow(trans.responses)>0){
   # save the translation requests
   utilityR::save.trans.requests(utilityR::create.translate.requests(trans.responses.j),
                                 directory = directory_dictionary$dir.requests,
-                                make.short.name(text_request_file_name), use_template = F)
+                                make.short.name(text_request_file_sufix), use_template = F)
 
 }
