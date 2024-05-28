@@ -80,7 +80,7 @@ if(length(sheet_names_new)>0){
   eval(parse(text = txt))
 
   txt <- paste0('res.soft_duplicates_l <- utilityR::find.similar.surveys(
-                ',sheet_names_new[i],'_tmp, tool.survey, uuid = "loop_index", enum.column=directory_dictionary$enum_colname, is.loop=T)')
+                ',sheet_names_new[i],'_tmp, tool.survey, uuid = "loop_index", enum.column=directory_dictionary$enum_colname)')
 
   eval(parse(text = txt))
 
