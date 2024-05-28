@@ -3,7 +3,7 @@
 # and loads the data into kobo.raw.main, kobo.raw.loop1...
 # also included are the standard steps of renaming uuid, and adding the loop_index
 
-raw_data_filename <- list.files(directory_dictionary$data_path, full.names = T, pattern = 'xlsx$')
+raw_data_filename <- list.files(directory_dictionary$data_path, full.names = T, pattern = "*.xlsx")
 
 if(length(raw_data_filename) > 1) { stop("Found multiple files containing raw Kobo data! Please clean up the kobo_export folder.")
 }else if(length(raw_data_filename) == 0){

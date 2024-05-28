@@ -39,6 +39,7 @@ if(nrow(other.responses)>0){
     # remove from other.responses.j where uuid in or.edited$uuid
     other.responses <- other.responses[!other.responses$uuid %in% existed.requests$uuid,]
   }
+
   # translate your data
   other.responses.j <- utilityR::translate.responses(responses = other.responses,
                                                      values_from = 'responses',
@@ -114,4 +115,4 @@ if(nrow(trans.responses)>0){
                                 directory = directory_dictionary$dir.requests,
                                 make.short.name(text_request_file_sufix), use_template = F)
 
-}
+
