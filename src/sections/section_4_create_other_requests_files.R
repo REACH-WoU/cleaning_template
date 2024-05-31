@@ -115,4 +115,4 @@ if(nrow(trans.responses)>0){
                                 directory = directory_dictionary$dir.requests,
                                 make.short.name(text_request_file_sufix), use_template = F)
 
-
+}
