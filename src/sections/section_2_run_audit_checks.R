@@ -1,6 +1,21 @@
-
-# load your audit files
-audits <- utilityR::load.audit.files(directory_dictionary$dir.audits, uuids = raw.main$uuid, track.changes = F)
+if (use_API){
+  
+  asset <- kobo_asset(assest_uid)
+  audits <- kobo_audit(asset)
+  
+  if(!'uuid' %in% names(audits)){
+    audits <- audits %>% 
+      left_join(raw.main %>% 
+                  select(`_id`,uuid))
+  }
+  
+  audits$start <- as.numeric(strptime(audits$start,"%Y-%m-%d %H:%M:%S"))
+  audits$end <- as.numeric(strptime(audits$end,"%Y-%m-%d %H:%M:%S"))
+  
+}else{
+  # load your audit files
+  audits <- utilityR::load.audit.files(directory_dictionary$dir.audits, uuids = raw.main$uuid, track.changes = F)
+}
 
 if(nrow(audits) > 0) {
   
@@ -21,7 +36,7 @@ if(nrow(audits) > 0) {
            duration = duration/n_questions,
            inter_q_duration = ifelse(inter_q_duration<0,0,inter_q_duration)) %>%
     select(-n_questions)
-    
+  
   
   # if you want to pre-process audits, do it here
   if(pre_process_audit_files){
