@@ -17,7 +17,7 @@ rm(list = ls())
 directory_dictionary <- list(
   research_cycle_name = 'xxxx',
   round = 'xxxx',
-  dir.audits = "data/inputs/audits/reach/", # The directory to your audit files
+  dir.audits = "data/inputs/audits/", # The directory to your audit files
   dir.audits.check = "output/checking/audit/",# The directory to your audit summary files (you'll be checking these)
   dir.requests = "output/checking/requests/", # the directory of your other_requests file
   dir.responses = "output/checking/responses/", # the directory of your responses to open questions
@@ -105,6 +105,19 @@ max_length_answer_1_question <- 20
 # The minimum number of different columns that makes us confident that the entry is not a soft duplicate
 min_num_diff_questions <- 8
 
+
+# use API key?
+use_API <- T
+token <- "" # check your token at https://kobo.impact-initiatives.org/token/?format=json
+
+# connect to the server here
+kobo_setup(url = "https://kobo.impact-initiatives.org/",
+           token = token)
+
+
+kobo_asset_list()  # you can check all your available assets with kobo_asset_list() and select the correct uid out of that
+assest_uid <- ''
+
 # run the checks
 source('src/sections/section_2_run_audit_checks.R')
 ```
@@ -173,11 +186,11 @@ partial_clean <- FALSE
 other_request_file_pattern <- paste(directory_dictionary$research_cycle_name,
                                     directory_dictionary$round, "other_requests", sep = "_")
 
-
 text_request_file_pattern <- paste(directory_dictionary$research_cycle_name,
                                    directory_dictionary$round, "text_requests_", sep = "_")
 
 source('src/sections/section_4_create_other_requests_files.R')
+
 # If you see that columns were missed from the translation. Please go into the `section_4_create_other_requests_files.R` script and tweak `missing_vars` object if something was missed from the `text` columns or `other.db` if something is missing from the `_other` columns.
 ```
 
