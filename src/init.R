@@ -8,8 +8,7 @@ devtools::install_github('https://github.com/REACH-WoU-Regional/translateR', bui
 devtools::install_github('https://github.com/cynkra/dm')
 devtools::install_github('https://github.com/dickoa/robotoolbox')
 
-
-pacman::p_load(docstring, tidyverse, readxl, writexl, openxlsx, stringr, 
+pacman::p_load(docstring, tidyverse, readxl, writexl, openxlsx, stringr,
                sf, geosphere, qdapRegex, cluster, randomcoloR, svDialogs, scales, janitor, utilityR,zip,geosphere,
                translateR,robotoolbox)
 
@@ -26,12 +25,3 @@ options(scipen = 999)
 options(dplyr.summarise.inform = FALSE)
 ###############################################################################
 
-# load TOOL Refuggess
-cat("\n- LOADING tool ...\n")
-
-cat("\nLoading Kobo tool from file", directory_dictionary$filename.tool, "...\n")
-label_colname <- utilityR::load.label.colname(directory_dictionary$filename.tool)
-tool.survey  <- utilityR::load.tool.survey(directory_dictionary$filename.tool, label_colname = directory_dictionary$label_colname)
-tool.choices <- utilityR::load.tool.choices(directory_dictionary$filename.tool, label_colname = directory_dictionary$label_colname)
-
-cat("..OK\n")
