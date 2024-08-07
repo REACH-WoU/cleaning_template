@@ -47,7 +47,7 @@ kobo_setup(url = "https://kobo.impact-initiatives.org/",
 
 
 kobo_asset_list()  # you can check all your available assets with kobo_asset_list() and select the correct uid out of that
-assest_uid <- ''
+asset_uid <- ''
 
 ```
 
@@ -122,17 +122,8 @@ max_length_answer_1_question <- 20
 min_num_diff_questions <- 8
 
 
-# use API key?
+# use API key for audit loading?
 use_API <- T
-token <- "" # check your token at https://kobo.impact-initiatives.org/token/?format=json
-
-# connect to the server here
-kobo_setup(url = "https://kobo.impact-initiatives.org/",
-           token = token)
-
-
-kobo_asset_list()  # you can check all your available assets with kobo_asset_list() and select the correct uid out of that
-assest_uid <- ''
 
 # run the checks
 source('src/sections/section_2_run_audit_checks.R')
