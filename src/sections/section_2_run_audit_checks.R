@@ -1,7 +1,7 @@
 
 if (use_API){
   
-  asset <- kobo_asset(assest_uid)
+  asset <- kobo_asset(asset_uid)
   audits <- kobo_audit(asset)
   
   if(!'uuid' %in% names(audits)){
