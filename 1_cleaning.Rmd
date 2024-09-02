@@ -289,6 +289,16 @@ Save your changes in the same file or create a new file in output/checking/respo
 ```{r}
 cleaning.log.outliers_full <- read.xlsx(paste0("output/checking/outliers/outlier_analysis_", n.sd, "sd.xlsx"),
                                    sheet = 1)
+if(any(is.na(cleaning.log.outliers_full$checked))){
+  stop('Some entries of your outlier file have missing status on the `checked` column. Please fix')
+}
+
+cleaning.log.outliers_full <- cleaning.log.outliers_full %>% 
+  mutate(new.value = case_when(
+         checked%==%'value corrected' ~ new.value,
+         checked%==%'value checked' ~ old.value,
+         TRUE ~ NA
+         ))
 
 cleaning.log.outliers <- cleaning.log.outliers_full %>% filter(checked%==%'value corrected')
 
