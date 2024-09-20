@@ -212,8 +212,12 @@ if(file.exists(polygon_file) & merge_column!=''){
 
 if(use_audit==T){
   if( !exists('audits')){
-    audits <- utilityR::load.audit.files(directory_dictionary$dir.audits, uuids = raw.main$uuid, track.changes = F)
+    non_gis_check <- FALSE
+    source('src/sections/section_2_3_x_helper_load_audits.R')
   }
+  
+  
+  
   audits <- audits[audits$uuid %in% raw.main$uuid,]
   
   
