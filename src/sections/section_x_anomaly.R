@@ -4,7 +4,6 @@ source('src/sections/section_2_3_x_helper_load_audits.R')
 # ------------------------------testing ---------------------------
 
 
-
 # macro <- read.xlsx('C:/Users/reach/Desktop/Git/CINM/data/MSNA2403_2024_final_anonymized_data_19July2024_cooccurence_added.xlsx') %>% 
 #   select(uuid, macroregion)
 # 
@@ -82,17 +81,6 @@ write.xlsx(df_enum_tests, paste0(directory_dictionary$dir.audits.check, 'Enumera
 
 
 ################## chain problems ################## 
-# check.questions <- c("H_2_water_source", "H_5_water_assess", "H_6_water_treat",
-#                      "H_10_wash_issues", "H_12_hand_washing", "H_14_toilet", "H_17_safe_toilet")
-
-# check.questions <- c("fsl_fcs_cereal", "fsl_fcs_legumes", "fsl_fcs_dairy", "fsl_fcs_meat",
-#                    "fsl_fcs_veg", "fsl_fcs_fruit", "fsl_fcs_oil", "fsl_fcs_sugar", "I_11_struggle_enough_money")
-
-check.logic.questions <- c("B_15_wgss_seeing", "B_16_wgss_hearing",
-                     "B_17_wgss_walking", "B_18_wgss_cognit", "B_19_wgss_selfcare",
-                     "B_20_wgss_comm")
-
-geo_column <- "macroregion"
 
 calculate.markov.outliers <- function(data, questions, geo_column) {
   
@@ -132,7 +120,7 @@ calculate.markov.outliers <- function(data, questions, geo_column) {
     return(log_prob)
   }
   
-  geovalues <- unlist(unique(data[geo_column]))
+  geovalues <- unlist(unique(raw.main[geo_column]))
   res_list <- c()
   
   suspected_data_combined <- data.frame()
@@ -183,7 +171,7 @@ calculate.markov.outliers <- function(data, questions, geo_column) {
     enum_interview_count$probs <- enum_interview_count$outlier_count / enum_interview_count$count
     
     enum_interview_count <- enum_interview_count %>%
-      dplyr::filter(count > 15 & probs > 0.075)
+      dplyr::filter(count > 15 & probs > 0.1)
     
     suspected_data <- suspected_data %>%
       dplyr::filter(!!sym(directory_dictionary$enum_colname) %in% enum_interview_count$enum)
@@ -198,26 +186,24 @@ calculate.markov.outliers <- function(data, questions, geo_column) {
   return(list(res_list = res_list, suspected_data = suspected_data_combined))
 }
 
-raw.main <- data
 
 if (length(check.logic.questions) != 0) {
   
-  res <- calculate.markov.outliers(raw.main, check.questions, geo_column)
+  res <- calculate.markov.outliers(raw.main, check.logic.questions, geo_column)
   
   prob_res <- res$res_list
   suspected_data <- res$suspected_data
   suspected_data$probs <- exp(suspected_data$probs)
   suspected_data$probs <- paste0(round(suspected_data$probs * 100, 6), "%")
   
-  res_df <- data.frame()
+  probs_df <- data.frame()
   for (geovalue in names(prob_res)) {
     prob_res[[geovalue]]$geovalue <- geovalue
-    res_df <- rbind(res_df, prob_res[[geovalue]])
+    probs_df <- rbind(probs_df, prob_res[[geovalue]])
   }
+  probs_df$probs <- paste0(round(probs_df$probs * 100, 2), "%")
   
-  res_df$probs <- paste0(round(res_df$probs * 100, 2), "%")
-  
-  write.xlsx(res_df, 'Enumerator_anomalies_logic.xlsx')
+  write.xlsx(probs_df, 'Enumerator_anomalies_logic.xlsx')
   write.xlsx(suspected_data, 'Enumerators_anomalies_logic_data.xlsx')
 } else {
   cat("Columns for logic check wasn't defined, process skipped")
@@ -259,14 +245,13 @@ entropy.process <- function(data, exclude_columns = c("uuid"), enum_id.column = 
 
 if (length(check.logic.questions) != 0) {
   entropy_res_list <- list()
-  geovalues <- unlist(unique(data[geo_column]))
+  geovalues <- unlist(unique(raw.main[geo_column]))
+  entropy_df <- data.frame()
   
   for (geovalue in geovalues) {
     entropy_data <- raw.main %>%
       dplyr::filter(!!sym(geo_column) %in% geovalue) %>%
       dplyr::select(c(check.logic.questions, "uuid", directory_dictionary$enum_colname))
-    
-    print(colnames(entropy_data))
     
     entropy_sum <- entropy.process(entropy_data, exclude_columns = c("uuid"), enum_id.column = directory_dictionary$enum_colname) %>%
       dplyr::rowwise() %>%
@@ -278,14 +263,70 @@ if (length(check.logic.questions) != 0) {
           na.rm = TRUE
         )
       ) %>%
+      dplyr::ungroup() %>%
       dplyr::select("enum", "entropy_sum", "num_interviews")
     
     entropy_sum <- entropy_sum %>%
       dplyr::filter(num_interviews > 15)
     
+    entropy_sum$geovalue <- geovalue
     entropy_res_list <- append(entropy_res_list, setNames(list(entropy_sum), geovalue))
+    entropy_df <- rbind(entropy_df, entropy_sum)
   }
 }
 
 ################## cross check ################## 
 
+common.enums.logic <- list()
+
+if (length(check.logic.questions) != 0) {
+  
+  geovalues <- unlist(unique(raw.main[geo_column]))
+  
+  for (geo in geovalues) {
+    
+    probs_geo_df <- probs_df %>%
+      dplyr::filter(geovalue == geo)
+    
+    entropy_geo_df <- entropy_df %>%
+      dplyr::filter(geovalue == geo) %>%
+      arrange(desc(entropy_sum))
+    
+    entropy_geo_df <- entropy_geo_df[1:nrow(probs_geo_df), ]
+    
+    enum_values_probs <- unique(probs_geo_df$enum)
+    enum_values_entropy <- unique(entropy_geo_df$enum)
+    
+    common_enum_values <- intersect(enum_values_probs, enum_values_entropy)
+    
+    # print(geo)
+    # print(paste("Probs", length(enum_values_probs)))
+    # print(paste("Entropy", length(enum_values_entropy)))
+    # print(paste("Intersection", length(common_enum_values)))
+    # print(length(common_enum_values) / min(length(enum_values_probs), length(enum_values_entropy)))
+    # print("*********************")
+    
+    if (length(common_enum_values) > 0) {
+      common.enums.logic <- append(common.enums.logic, setNames(list(common_enum_values), geo))
+    }
+  }
+  
+  cat("Enums with anomalies surveys detected with logic checks\n")
+  for (geo in names(common.enums.logic)) {
+    cat(paste("Geocolumn:", geo_column, "Geo:", geo, "\n"))
+    cat("Suspected enums:", common.enums.logic[[geo]], "\n\n")
+  }
+  
+  cat("Suspected enums detected with logic checks and audits analysis:\n")
+  
+  common.enums.vector <- unname(unlist(common.enums.logic))
+  suspected <- problematic_enums %>%
+    dplyr::filter(problematic_enumerator_to_check == T & enum_id %in% common.enums.vector)
+  
+  if (nrow(suspected) == 0) {
+    cat("None\n")
+  } else {
+    cat(paste(suspected$enum_id, sep="  "))
+  }
+  
+}
