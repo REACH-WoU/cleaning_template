@@ -157,14 +157,14 @@ calculate.markov.outliers <- function(data, questions, geo_column) {
     suspected_data %>% dplyr::select(c("uuid", directory_dictionary$enum_colname, questions, "probs"))
     
     enum_outlier_count <- suspected_data %>%
-      dplyr::group_by(enum) %>%
+      dplyr::group_by(!!sym(directory_dictionary$enum_colname)) %>%
       dplyr::summarize(outlier_count = n()) 
     
     
     enum_interview_count <- logic.check.data %>%
-      dplyr::group_by(enum) %>%
+      dplyr::group_by(!!sym(directory_dictionary$enum_colname)) %>%
       dplyr::summarize(count = n()) %>%
-      dplyr::left_join(enum_outlier_count, by = "enum") %>%
+      dplyr::left_join(enum_outlier_count, by = directory_dictionary$enum_colname) %>%
       dplyr::mutate(outlier_count = ifelse(is.na(outlier_count), 0, outlier_count),
                     probs = outlier_count / count)
     
@@ -174,7 +174,9 @@ calculate.markov.outliers <- function(data, questions, geo_column) {
       dplyr::filter(count > 15 & probs > 0.1)
     
     suspected_data <- suspected_data %>%
-      dplyr::filter(!!sym(directory_dictionary$enum_colname) %in% enum_interview_count$enum)
+      dplyr::filter(!!sym(directory_dictionary$enum_colname) %in% 
+                      (enum_interview_count %>% dplyr::pull(!!sym(directory_dictionary$enum_colname))))
+    
     
     suspected_data$geovalue <- geovalue
     
@@ -258,13 +260,13 @@ if (length(check.logic.questions) != 0) {
       dplyr::mutate(
         entropy_sum = sum(
           across(
-            .cols = -c(enum, num_interviews)
+            .cols = -c(!!sym(directory_dictionary$enum_colname), num_interviews)
           ),
           na.rm = TRUE
         )
       ) %>%
       dplyr::ungroup() %>%
-      dplyr::select("enum", "entropy_sum", "num_interviews")
+      dplyr::select(!!sym(directory_dictionary$enum_colname), "entropy_sum", "num_interviews")
     
     entropy_sum <- entropy_sum %>%
       dplyr::filter(num_interviews > 15)
@@ -294,8 +296,8 @@ if (length(check.logic.questions) != 0) {
     
     entropy_geo_df <- entropy_geo_df[1:nrow(probs_geo_df), ]
     
-    enum_values_probs <- unique(probs_geo_df$enum)
-    enum_values_entropy <- unique(entropy_geo_df$enum)
+    enum_values_probs <- unique(probs_geo_df %>% dplyr::pull(!!sym(directory_dictionary$enum_colname)))
+    enum_values_entropy <- unique(entropy_geo_df %>% dplyr::pull(!!sym(directory_dictionary$enum_colname)))
     
     common_enum_values <- intersect(enum_values_probs, enum_values_entropy)
     
