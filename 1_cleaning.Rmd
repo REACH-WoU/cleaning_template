@@ -39,15 +39,18 @@ Set up how the data will be loaded here. If using API key, this will load the la
 # If loading the data through API fill the following
 # use API key?
 use_API <- T
-token <- "e5895090cb45140ad364f68b8592d32a38bf007a" # check your token at https://kobo.impact-initiatives.org/token/?format=json
 
-# connect to the server here
-kobo_setup(url = "https://kobo.impact-initiatives.org/",
-           token = token)
+if (use_API) {
+  token <- "e5895090cb45140ad364f68b8592d32a38bf007a" # check your token at https://kobo.impact-initiatives.org/token/?format=json
+  # connect to the server here
+  kobo_setup(url = "https://kobo.impact-initiatives.org/",
+             token = token)
+  
+  
+  kobo_asset_list()  # you can check all your available assets with kobo_asset_list() and select the correct uid out of that
+  asset_uid <- 'aBB5WE2RVBfUaDRctcj7pC'
+}
 
-
-kobo_asset_list()  # you can check all your available assets with kobo_asset_list() and select the correct uid out of that
-asset_uid <- 'aBB5WE2RVBfUaDRctcj7pC'
 
 ```
 
