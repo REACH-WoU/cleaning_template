@@ -50,8 +50,17 @@ analysis.result <- utilityR::analyse.similarity(res.soft_duplicates, enum.column
 analysis <- analysis.result$analysis
 outliers <- analysis.result$outliers
 
-analysis$data_id <- 'main'
-outliers$data_id <- 'main'
+if (nrow(analysis) > 0) {
+  analysis$data_id <- 'main'
+} else {
+  analysis$data_id <- character(0)
+}
+
+if (nrow(outliers) > 0) {
+  outliers$data_id <- 'main'
+} else {
+  outliers$data_id <- character(0)
+}
 
 soft.duplicates <- res.soft_duplicates %>%
   filter(number_different_columns <= min_num_diff_questions) %>%
@@ -83,8 +92,17 @@ if(length(sheet_names_new)>0){
     analysis_l <- analysis.result_l$analysis
     outliers_l <- analysis.result_l$outliers
     
-    analysis_l$data_id <- sheet_names_new[i]
-    outliers_l$data_id <- sheet_names_new[i]
+    if (nrow(analysis_l) > 0) {
+      analysis_l$data_id <- sheet_names_new[i]
+    } else {
+      analysis_l$data_id <- character(0)
+    }
+    
+    if (nrow(outliers_l) > 0) {
+      outliers_l$data_id <- sheet_names_new[i]
+    } else {
+      outliers_l$data_id <- character(0)
+    }
     
     analysis <- rbind(analysis,analysis_l)
     outliers <- rbind(outliers,outliers_l)
