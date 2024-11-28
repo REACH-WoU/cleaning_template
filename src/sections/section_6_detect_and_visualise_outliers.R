@@ -66,10 +66,13 @@ if(length(sheet_names_new)>0){
   for(i in 1:length(sheet_names_new)){
     txt <- paste0('cleaning.log.outliers <- rbind(cleaning.log.outliers,raw.loop',i,'.outliers)')
     eval(parse(text=txt))
-  }}
+}}
 
-cleaning.log.outliers$checked <- NA
-
+if (nrow(cleaning.log.outliers) > 0) {
+  cleaning.log.outliers$checked <- NA
+} else {
+  cleaning.log.outliers$checked <- logical(0)
+}
 
 wb <- createWorkbook()
 addWorksheet(wb, 'Sheet 1')
